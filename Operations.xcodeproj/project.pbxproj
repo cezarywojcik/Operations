@@ -315,6 +315,8 @@
 		EEBEC4F11D2C35F500769018 /* KVONotificationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEBEC4F01D2C35F500769018 /* KVONotificationTests.swift */; };
 		EEBEC4F21D2C35F500769018 /* KVONotificationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEBEC4F01D2C35F500769018 /* KVONotificationTests.swift */; };
 		EEBEC4F31D2C35F500769018 /* KVONotificationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEBEC4F01D2C35F500769018 /* KVONotificationTests.swift */; };
+		F1B714071D3D607100FC627D /* NSOperation+Operations.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1B714061D3D607100FC627D /* NSOperation+Operations.swift */; };
+		F1B714091D3D60AB00FC627D /* OperationDebugData.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1B714081D3D60AB00FC627D /* OperationDebugData.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -475,6 +477,8 @@
 		65FD67B31CC38933009E2C88 /* BasicTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BasicTests.swift; sourceTree = "<group>"; };
 		65FD67B81CC389A5009E2C88 /* BlockOperationTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlockOperationTests.swift; sourceTree = "<group>"; };
 		EEBEC4F01D2C35F500769018 /* KVONotificationTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KVONotificationTests.swift; sourceTree = "<group>"; };
+		F1B714061D3D607100FC627D /* NSOperation+Operations.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "NSOperation+Operations.swift"; sourceTree = "<group>"; };
+		F1B714081D3D60AB00FC627D /* OperationDebugData.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OperationDebugData.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -614,6 +618,8 @@
 				652616E01C11F5EB00654091 /* Support.swift */,
 				65BB56D61C70F29500DF5211 /* ThreadSafety.swift */,
 				652616E11C11F5EB00654091 /* TimeoutObserver.swift */,
+				F1B714061D3D607100FC627D /* NSOperation+Operations.swift */,
+				F1B714081D3D60AB00FC627D /* OperationDebugData.swift */,
 			);
 			path = Shared;
 			sourceTree = "<group>";
@@ -1258,6 +1264,7 @@
 				65BB56D71C70F29500DF5211 /* ThreadSafety.swift in Sources */,
 				6526186F1C11F8FC00654091 /* AdvancedOperationQueue.swift in Sources */,
 				652618DD1C11F98000654091 /* ContactsOperation.swift in Sources */,
+				F1B714091D3D60AB00FC627D /* OperationDebugData.swift in Sources */,
 				650852311C8B23580058F8AA /* Repeatable.swift in Sources */,
 				652618D01C11F93D00654091 /* BackgroundObserver.swift in Sources */,
 				6526186A1C11F8FC00654091 /* NegatedCondition.swift in Sources */,
@@ -1289,6 +1296,7 @@
 				6526186B1C11F8FC00654091 /* NoFailedDependenciesCondition.swift in Sources */,
 				652618651C11F8FC00654091 /* GatedOperation.swift in Sources */,
 				652618DC1C11F98000654091 /* ContactsCondition.swift in Sources */,
+				F1B714071D3D607100FC627D /* NSOperation+Operations.swift in Sources */,
 				659A54F01CD3285000D9D311 /* CloudKitError.swift in Sources */,
 				652618641C11F8FC00654091 /* ExclusivityManager.swift in Sources */,
 				652618691C11F8FC00654091 /* MutuallyExclusive.swift in Sources */,
