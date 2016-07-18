@@ -205,6 +205,21 @@ public class AdvancedOperationQueue: NSOperationQueue {
     public override func addOperations(ops: [NSOperation], waitUntilFinished wait: Bool) {
         ops.forEach(addOperation)
     }
+
+    /**
+     This method is used for debugging the current state of an `OperationQueue`.
+
+     - returns: An `OperationDebugData` object containing debug data for the current `OperationQueue`.
+     */
+    public func debugData() -> OperationDebugData {
+        let queueDebugData = operations.map { ($0 as? OperationDebuggable)?.debugData() ?? $0.debugDataNSOperation() }
+        return OperationDebugData(
+            description: "Queue",
+            properties: [
+                "numOperations": String(operations.count)
+            ],
+            subOperations: queueDebugData)
+    }
 }
 
 
