@@ -9,7 +9,7 @@
 import XCTest
 @testable import Operations
 
-class OperationWhichFailsThenSucceeds: Operation {
+class OperationWhichFailsThenSucceeds: AdvancedOperation {
 
     let shouldFail: () -> Bool
 

@@ -30,7 +30,7 @@ extension OperationIdentity: CustomStringConvertible {
     }
 }
 
-public extension Operation {
+public extension AdvancedOperation {
 
     var identity: OperationIdentity {
         return OperationIdentity(identifier: identifier, name: name)
@@ -189,7 +189,7 @@ public final class OperationProfiler: Identifiable, Equatable {
     }
 
     func addChildOperation(operation: NSOperation, now: NSTimeInterval = CFAbsoluteTimeGetCurrent() as NSTimeInterval) {
-        if let operation = operation as? Operation {
+        if let operation = operation as? AdvancedOperation {
             let profiler = OperationProfiler(parent: self)
             operation.addObserver(profiler)
             dispatch_sync(queue) { [unowned self] in
@@ -231,7 +231,7 @@ extension OperationProfiler: OperationProfilerReporter {
 
 extension OperationProfiler: OperationObserverType {
 
-    public func didAttachToOperation(operation: Operation) {
+    public func didAttachToOperation(operation: AdvancedOperation) {
         dispatch_sync(queue) { [unowned self] in
             self.result = self.result.setIdentity(operation.identity)
         }
@@ -241,28 +241,28 @@ extension OperationProfiler: OperationObserverType {
 
 extension OperationProfiler: OperationWillExecuteObserver {
 
-    public func willExecuteOperation(operation: Operation) {
+    public func willExecuteOperation(operation: AdvancedOperation) {
         addMetricNow(forEvent: .Started)
     }
 }
 
 extension OperationProfiler: OperationDidCancelObserver {
 
-    public func didCancelOperation(operation: Operation) {
+    public func didCancelOperation(operation: AdvancedOperation) {
         addMetricNow(forEvent: .Cancelled)
     }
 }
 
 extension OperationProfiler: OperationDidFinishObserver {
 
-    public func didFinishOperation(operation: Operation, errors: [ErrorType]) {
+    public func didFinishOperation(operation: AdvancedOperation, errors: [ErrorType]) {
         addMetricNow(forEvent: .Finished)
     }
 }
 
 extension OperationProfiler: OperationDidProduceOperationObserver {
 
-    public func operation(operation: Operation, didProduceOperation newOperation: NSOperation) {
+    public func operation(operation: AdvancedOperation, didProduceOperation newOperation: NSOperation) {
         addChildOperation(newOperation)
     }
 }

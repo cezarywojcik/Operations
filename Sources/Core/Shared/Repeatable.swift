@@ -84,7 +84,7 @@ extension RepeatedOperation where T: Repeatable {
  When conforming to Repeatable, the closure is executed, passing in the
  current repeat count.
  */
-public class RepeatableOperation<T: Operation>: Operation, OperationDidFinishObserver, Repeatable {
+public class RepeatableOperation<T: AdvancedOperation>: AdvancedOperation, OperationDidFinishObserver, Repeatable {
 
     let operation: T
     let shouldRepeatBlock: Int -> Bool
@@ -102,7 +102,7 @@ public class RepeatableOperation<T: Operation>: Operation, OperationDidFinishObs
         super.init()
         name = "Repeatable<\(operation.operationName)>"
         addObserver(DidCancelObserver { [weak operation] _ in
-            (operation as? Operation)?.cancel()
+            (operation as? AdvancedOperation)?.cancel()
         })
     }
 
@@ -120,7 +120,7 @@ public class RepeatableOperation<T: Operation>: Operation, OperationDidFinishObs
     }
 
     /// Implementation for OperationDidFinishObserver
-    public func didFinishOperation(operation: Operation, errors: [ErrorType]) {
+    public func didFinishOperation(operation: AdvancedOperation, errors: [ErrorType]) {
         if self.operation == operation {
             finish(errors)
         }

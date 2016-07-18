@@ -30,7 +30,7 @@ For example
     }
     queue.addOperation(alert)
 */
-public class AlertOperation<From: PresentingViewController>: Operation {
+public class AlertOperation<From: PresentingViewController>: AdvancedOperation {
 
     private var uiOperation: UIOperation<UIAlertController, From>
 

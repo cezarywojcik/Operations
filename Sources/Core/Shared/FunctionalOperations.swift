@@ -13,7 +13,7 @@ import Foundation
 
  Abstract but a concrete class for a ResultOperationType.
 */
-public class ResultOperation<Result>: Operation, ResultOperationType {
+public class ResultOperation<Result>: AdvancedOperation, ResultOperationType {
 
     /// - returns: the Result
     public var result: Result! = nil
@@ -75,7 +75,7 @@ public class MapOperation<T, U>: ResultOperation<U>, AutomaticInjectionOperation
     }
 }
 
-extension ResultOperationType where Self: Operation {
+extension ResultOperationType where Self: AdvancedOperation {
 
     /**
      Map the result of an `Operation` which conforms to `ResultOperationType`.
@@ -133,7 +133,7 @@ public class FilterOperation<Element>: ResultOperation<Array<Element>>, Automati
     }
 }
 
-extension ResultOperationType where Self: Operation, Result: SequenceType {
+extension ResultOperationType where Self: AdvancedOperation, Result: SequenceType {
 
     /**
      Filter the result of the receiver `Operation` which conforms to `ResultOperationType` where
@@ -193,7 +193,7 @@ public class ReduceOperation<Element, U>: ResultOperation<U>, AutomaticInjection
     }
 }
 
-extension ResultOperationType where Self: Operation, Result: SequenceType {
+extension ResultOperationType where Self: AdvancedOperation, Result: SequenceType {
 
     /**
      Reduce the result of the receiver `Operation` which conforms to `ResultOperationType` where

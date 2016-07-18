@@ -9,7 +9,7 @@
 import Foundation
 
 /**
-A protocol which the `OperationQueue`'s delegate must conform to. The delegate is informed
+A protocol which the `AdvancedOperationQueue`'s delegate must conform to. The delegate is informed
 when the queue is about to add an operation, and when operations finish. Because it is a
 delegate protocol, conforming types must be classes, as the queue weakly owns it.
 */
@@ -22,7 +22,7 @@ public protocol OperationQueueDelegate: class {
     - paramter queue: the `OperationQueue`.
     - paramter operation: the `NSOperation` instance about to be added.
     */
-    func operationQueue(queue: OperationQueue, willAddOperation operation: NSOperation)
+    func operationQueue(queue: AdvancedOperationQueue, willAddOperation operation: NSOperation)
 
     /**
     An operation has finished on the queue.
@@ -31,7 +31,7 @@ public protocol OperationQueueDelegate: class {
     - parameter operation: the `NSOperation` instance which finished.
     - parameter errors: an array of `ErrorType`s.
     */
-    func operationQueue(queue: OperationQueue, willFinishOperation operation: NSOperation, withErrors errors: [ErrorType])
+    func operationQueue(queue: AdvancedOperationQueue, willFinishOperation operation: NSOperation, withErrors errors: [ErrorType])
 
     /**
      An operation has finished on the queue.
@@ -40,7 +40,7 @@ public protocol OperationQueueDelegate: class {
      - parameter operation: the `NSOperation` instance which finished.
      - parameter errors: an array of `ErrorType`s.
      */
-    func operationQueue(queue: OperationQueue, didFinishOperation operation: NSOperation, withErrors errors: [ErrorType])
+    func operationQueue(queue: AdvancedOperationQueue, didFinishOperation operation: NSOperation, withErrors errors: [ErrorType])
 
     /**
      The operation queue will add a new operation via produceOperation().
@@ -50,14 +50,14 @@ public protocol OperationQueueDelegate: class {
      - paramter queue: the `OperationQueue`.
      - paramter operation: the `NSOperation` instance about to be added.
      */
-    func operationQueue(queue: OperationQueue, willProduceOperation operation: NSOperation)
+    func operationQueue(queue: AdvancedOperationQueue, willProduceOperation operation: NSOperation)
 }
 
 /**
 An `NSOperationQueue` subclass which supports the features of Operations. All functionality
 is achieved via the overridden functionality of `addOperation`.
 */
-public class OperationQueue: NSOperationQueue {
+public class AdvancedOperationQueue: NSOperationQueue {
 
     #if swift(>=3.0)
         // (SR-192 is fixed in Swift 3)
@@ -108,7 +108,7 @@ public class OperationQueue: NSOperationQueue {
     */
     // swiftlint:disable function_body_length
     public override func addOperation(operation: NSOperation) {
-        if let operation = operation as? Operation {
+        if let operation = operation as? AdvancedOperation {
 
             /// Add an observer so that any produced operations are added to the queue
             operation.addObserver(ProducedOperationObserver { [weak self] op, produced in
@@ -228,7 +228,7 @@ public extension NSOperationQueue {
 }
 
 
-public extension OperationQueue {
+public extension AdvancedOperationQueue {
 
     private static let sharedMainQueue = MainQueue()
 
@@ -237,13 +237,13 @@ public extension OperationQueue {
 
      - returns: The main queue
      */
-    public override class func mainQueue() -> OperationQueue {
+    public override class func mainQueue() -> AdvancedOperationQueue {
         return sharedMainQueue
     }
 }
 
 /// OperationQueue wrapper around the main queue
-private class MainQueue: OperationQueue {
+private class MainQueue: AdvancedOperationQueue {
     override init() {
         super.init()
         underlyingQueue = dispatch_get_main_queue()

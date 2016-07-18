@@ -45,12 +45,12 @@ public class NoFailedDependenciesCondition: Condition {
     - parameter operation: the `Operation` which the condition is attached to.
     - parameter completion: the completion block which receives a `OperationConditionResult`.
     */
-    public override func evaluate(operation: Operation, completion: CompletionBlockType) {
+    public override func evaluate(operation: AdvancedOperation, completion: CompletionBlockType) {
         let dependencies = operation.dependencies
 
         let cancelled = dependencies.filter { $0.cancelled }
         let failures = dependencies.filter {
-            if let operation = $0 as? Operation {
+            if let operation = $0 as? AdvancedOperation {
                 return operation.failed
             }
             return false

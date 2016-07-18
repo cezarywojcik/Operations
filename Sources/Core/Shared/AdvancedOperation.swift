@@ -1,5 +1,5 @@
 //
-//  Operation.swift
+//  AdvancedOperation.swift
 //  YapDB
 //
 //  Created by Daniel Thorpe on 25/06/2015.
@@ -13,7 +13,7 @@ import Foundation
 // swiftlint:disable type_body_length
 
 /**
-Abstract base Operation class which subclasses `NSOperation`.
+Abstract base AdvancedOperation class which subclasses `NSOperation`.
 
 Operation builds on `NSOperation` in a few simple ways.
 
@@ -24,7 +24,7 @@ Operation builds on `NSOperation` in a few simple ways.
 to be notified of lifecycle events in the operation.
 
 */
-public class Operation: NSOperation {
+public class AdvancedOperation: NSOperation {
 
     private enum State: Int, Comparable {
 
@@ -407,7 +407,7 @@ public class Operation: NSOperation {
 
 // MARK: - State
 
-public extension Operation {
+public extension AdvancedOperation {
 
     private var state: State {
         get {
@@ -449,7 +449,7 @@ public extension Operation {
 
 // MARK: - Dependencies
 
-public extension Operation {
+public extension AdvancedOperation {
 
     internal func evaluateConditions() -> GroupOperation {
 
@@ -482,7 +482,7 @@ public extension Operation {
         return evaluator
     }
 
-    internal func addDependencyOnPreviousMutuallyExclusiveOperation(operation: Operation) {
+    internal func addDependencyOnPreviousMutuallyExclusiveOperation(operation: AdvancedOperation) {
         precondition(state <= .Executing, "Dependencies cannot be modified after execution has begun, current state: \(state).")
         super.addDependency(operation)
     }
@@ -536,7 +536,7 @@ public extension Operation {
 
 // MARK: - Observers
 
-public extension Operation {
+public extension AdvancedOperation {
 
     private(set) var observers: [OperationObserverType] {
         get {
@@ -576,7 +576,7 @@ public extension Operation {
 
 // MARK: - Execution
 
-public extension Operation {
+public extension AdvancedOperation {
 
     /// Starts the operation, correctly managing the cancelled state. Cannot be over-ridden
     final override func start() {
@@ -596,7 +596,7 @@ public extension Operation {
         // Inform observers that the operation will execute
         willExecuteObservers.forEach { $0.willExecuteOperation(self) }
 
-        let nextState = stateLock.withCriticalScope { () -> (Operation.State?) in
+        let nextState = stateLock.withCriticalScope { () -> (AdvancedOperation.State?) in
             assert(!executing, "Operation is attempting to execute, but is already executing.")
             guard !_isTransitioningToExecuting else {
                 assertionFailure("Operation is attempting to execute twice, concurrently.")
@@ -611,12 +611,12 @@ public extension Operation {
             // by an observer
             guard (_internalErrors.isEmpty && !cancelled) || disableAutomaticFinishing else {
                 _isHandlingFinish = true
-                return Operation.State.Finishing
+                return AdvancedOperation.State.Finishing
             }
 
             // Transition to the .isExecuting state, and explicitly send the required KVO change notifications
             _isTransitioningToExecuting = true
-            return Operation.State.Executing
+            return AdvancedOperation.State.Executing
         }
 
         guard nextState != .Finishing else {
@@ -628,7 +628,7 @@ public extension Operation {
 
         willChangeValueForKey(NSOperation.KeyPath.Executing.rawValue)
 
-        let nextState2 = stateLock.withCriticalScope { () -> (Operation.State?) in
+        let nextState2 = stateLock.withCriticalScope { () -> (AdvancedOperation.State?) in
             // Re-check state, since it could have changed on another thread (ex. via finish)
             guard state <= .Pending else { return nil }
 
@@ -675,7 +675,7 @@ public extension Operation {
 
 // MARK: - Finishing
 
-public extension Operation {
+public extension AdvancedOperation {
 
     /**
      Finish method which must be called eventually after an operation has
@@ -765,11 +765,11 @@ public extension Operation {
     }
 }
 
-private func < (lhs: Operation.State, rhs: Operation.State) -> Bool {
+private func < (lhs: AdvancedOperation.State, rhs: AdvancedOperation.State) -> Bool {
     return lhs.rawValue < rhs.rawValue
 }
 
-private func == (lhs: Operation.State, rhs: Operation.State) -> Bool {
+private func == (lhs: AdvancedOperation.State, rhs: AdvancedOperation.State) -> Bool {
     return lhs.rawValue == rhs.rawValue
 }
 
@@ -850,7 +850,7 @@ extension NSOperation {
         removeDependencies(dependencies)
     }
 
-    internal func setQualityOfServiceFromUserIntent(userIntent: Operation.UserIntent) {
+    internal func setQualityOfServiceFromUserIntent(userIntent: AdvancedOperation.UserIntent) {
         qualityOfService = userIntent.qos
     }
 }
@@ -883,10 +883,10 @@ extension NSRecursiveLock {
 
 extension Array where Element: NSOperation {
 
-    internal var splitNSOperationsAndOperations: ([NSOperation], [Operation]) {
+    internal var splitNSOperationsAndOperations: ([NSOperation], [AdvancedOperation]) {
         return reduce(([], [])) { result, element in
             var (ns, op) = result
-            if let operation = element as? Operation {
+            if let operation = element as? AdvancedOperation {
                 op.append(operation)
             }
             else {
@@ -896,16 +896,16 @@ extension Array where Element: NSOperation {
         }
     }
 
-    internal var userIntent: Operation.UserIntent {
+    internal var userIntent: AdvancedOperation.UserIntent {
         get {
             let (_, ops) = splitNSOperationsAndOperations
             return ops.map { $0.userIntent }.maxElement { $0.rawValue < $1.rawValue } ?? .None
         }
     }
 
-    internal func forEachOperation(@noescape body: (Operation) throws -> Void) rethrows {
+    internal func forEachOperation(@noescape body: (AdvancedOperation) throws -> Void) rethrows {
         try forEach {
-            if let operation = $0 as? Operation {
+            if let operation = $0 as? AdvancedOperation {
                 try body(operation)
             }
         }

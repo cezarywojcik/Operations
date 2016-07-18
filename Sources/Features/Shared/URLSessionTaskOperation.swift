@@ -17,7 +17,7 @@ as usual. Typically this operation would be used after the task is
 setup, so that conditions or observers can be attached.
 
 */
-public class URLSessionTaskOperation: Operation {
+public class URLSessionTaskOperation: AdvancedOperation {
 
     enum KeyPath: String {
         case State = "state"

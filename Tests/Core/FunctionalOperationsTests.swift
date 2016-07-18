@@ -9,7 +9,7 @@
 import XCTest
 @testable import Operations
 
-class NumbersOperation: Operation, ResultOperationType {
+class NumbersOperation: AdvancedOperation, ResultOperationType {
 
     typealias Result = Array<Int>
 

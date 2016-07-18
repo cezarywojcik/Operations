@@ -58,10 +58,10 @@ class StressTest: OperationTests {
         // this test will crash with EXC_BAD_ACCESS, or sometimes other errors.
         //
         class TestDelegate: OperationQueueDelegate {
-            func operationQueue(queue: OperationQueue, willAddOperation operation: NSOperation) { /* do nothing */ }
-            func operationQueue(queue: OperationQueue, willFinishOperation operation: NSOperation, withErrors errors: [ErrorType]) { /* do nothing */ }
-            func operationQueue(queue: OperationQueue, didFinishOperation operation: NSOperation, withErrors errors: [ErrorType]) { /* do nothing */ }
-            func operationQueue(queue: OperationQueue, willProduceOperation operation: NSOperation) { /* do nothing */ }
+            func operationQueue(queue: AdvancedOperationQueue, willAddOperation operation: NSOperation) { /* do nothing */ }
+            func operationQueue(queue: AdvancedOperationQueue, willFinishOperation operation: NSOperation, withErrors errors: [ErrorType]) { /* do nothing */ }
+            func operationQueue(queue: AdvancedOperationQueue, didFinishOperation operation: NSOperation, withErrors errors: [ErrorType]) { /* do nothing */ }
+            func operationQueue(queue: AdvancedOperationQueue, willProduceOperation operation: NSOperation) { /* do nothing */ }
         }
         
         let expectation = expectationWithDescription("Test: \(#function)")
@@ -240,7 +240,7 @@ class StressTest: OperationTests {
         let batchTimeout = Double(batchSize) / 333.0
         print ("\(#function): Parameters: batch size: \(batchSize); batches: \(batches)")
         
-        final class TestOperation3: Operation, Repeatable {
+        final class TestOperation3: AdvancedOperation, Repeatable {
             init(number: Int) {
                 super.init()
                 name = "TestOperation3_\(number)"

@@ -77,7 +77,7 @@ public protocol OperationCondition {
     - note: Only a single operation may be returned.
 
     */
-    func dependencyForOperation(operation: Operation) -> NSOperation?
+    func dependencyForOperation(operation: AdvancedOperation) -> NSOperation?
 
     /**
     Evaluate the condition, to see if it has been satisfied.
@@ -85,10 +85,10 @@ public protocol OperationCondition {
     - parameter operation: the `Operation` which this condition is attached to.
     - parameter completion: a closure which receives an `OperationConditionResult`.
     */
-    func evaluateForOperation(operation: Operation, completion: OperationConditionResult -> Void)
+    func evaluateForOperation(operation: AdvancedOperation, completion: OperationConditionResult -> Void)
 }
 
-internal func evaluateOperationConditions(conditions: [OperationCondition], operation: Operation, completion: [ErrorType] -> Void) {
+internal func evaluateOperationConditions(conditions: [OperationCondition], operation: AdvancedOperation, completion: [ErrorType] -> Void) {
 
     let group = dispatch_group_create()
 

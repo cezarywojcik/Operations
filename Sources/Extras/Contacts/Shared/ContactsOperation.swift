@@ -31,7 +31,7 @@ public typealias RemoveContactsFromGroup = _RemoveContactsFromGroup<SystemContac
 // MARK: - ContactsAccess
 
 @available(iOS 9.0, OSX 10.11, *)
-public class _ContactsAccess<Store: ContactStoreType>: Operation {
+public class _ContactsAccess<Store: ContactStoreType>: AdvancedOperation {
 
     let entityType: CNEntityType
     public let store: Store

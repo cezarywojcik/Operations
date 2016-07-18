@@ -125,7 +125,7 @@ However, note that the presenting view controller is associated into a `ViewCont
 This enum lets you define how the view controller should be presented. Either, "show", "show detail" or
 "present".
 */
-public class UIOperation<C, From where C: UIViewController, From: PresentingViewController>: Operation {
+public class UIOperation<C, From where C: UIViewController, From: PresentingViewController>: AdvancedOperation {
 
     /// The controller which will be presented.
     public let controller: C

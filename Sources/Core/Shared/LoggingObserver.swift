@@ -46,7 +46,7 @@ public struct LoggingObserver: OperationObserver {
 
     - parameter operation: the `Operation` which has started.
     */
-    public func willExecuteOperation(operation: Operation) {
+    public func willExecuteOperation(operation: AdvancedOperation) {
         log("\(operation.operationName): will execute.")
     }
 
@@ -58,7 +58,7 @@ public struct LoggingObserver: OperationObserver {
 
      - parameter operation: the `Operation` which has started.
      */
-    public func willCancelOperation(operation: Operation, errors: [ErrorType]) {
+    public func willCancelOperation(operation: AdvancedOperation, errors: [ErrorType]) {
         let detail = errors.count > 0 ? "error(s): \(errors)" : "no errors"
         log("\(operation.operationName): will cancel with \(detail).")
     }
@@ -71,7 +71,7 @@ public struct LoggingObserver: OperationObserver {
 
      - parameter operation: the `Operation` which has started.
      */
-    public func didCancelOperation(operation: Operation) {
+    public func didCancelOperation(operation: AdvancedOperation) {
         log("\(operation.operationName): did cancel.")
     }
 
@@ -89,10 +89,10 @@ public struct LoggingObserver: OperationObserver {
     - parameter operation: the `Operation` producer.
     - parameter newOperation: the `Operation` which has been produced.
     */
-    public func operation(operation: Operation, didProduceOperation newOperation: NSOperation) {
+    public func operation(operation: AdvancedOperation, didProduceOperation newOperation: NSOperation) {
         let detail = newOperation.operationName
 
-        if let newOperation = newOperation as? Operation {
+        if let newOperation = newOperation as? AdvancedOperation {
             newOperation.addObserver(LoggingObserver(queue: queue, logger: logger))
         }
 
@@ -113,7 +113,7 @@ public struct LoggingObserver: OperationObserver {
      - parameter operation: the `Operation` that finished.
      - parameter errors: an array of `ErrorType`, not that these will be printed out.
      */
-    public func willFinishOperation(operation: Operation, errors: [ErrorType]) {
+    public func willFinishOperation(operation: AdvancedOperation, errors: [ErrorType]) {
         let detail = errors.count > 0 ? "error(s): \(errors)" : "no errors"
         log("\(operation.operationName): will finish with \(detail).")
     }
@@ -132,7 +132,7 @@ public struct LoggingObserver: OperationObserver {
     - parameter operation: the `Operation` that finished.
     - parameter errors: an array of `ErrorType`, not that these will be printed out.
     */
-    public func didFinishOperation(operation: Operation, errors: [ErrorType]) {
+    public func didFinishOperation(operation: AdvancedOperation, errors: [ErrorType]) {
         let detail = errors.count > 0 ? "error(s): \(errors)" : "no errors"
         log("\(operation.operationName): did finish with \(detail).")
     }

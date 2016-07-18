@@ -222,7 +222,7 @@ public class RetryOperation<T: NSOperation>: RepeatedOperation<T> {
         super.child(child, didAttemptRecoveryFromErrors: errors)
     }
 
-    public override func operationQueue(queue: OperationQueue, willFinishOperation operation: NSOperation, withErrors errors: [ErrorType]) {
+    public override func operationQueue(queue: AdvancedOperationQueue, willFinishOperation operation: NSOperation, withErrors errors: [ErrorType]) {
         if errors.isEmpty, let previous = previous where operation === current {
             didRecoverFromOperationErrors(previous)
         }

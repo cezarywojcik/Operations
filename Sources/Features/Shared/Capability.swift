@@ -143,7 +143,7 @@ extension Capability {
  status for any CapabilityType.
 
 */
-public class GetAuthorizationStatus<Capability: CapabilityType>: Operation {
+public class GetAuthorizationStatus<Capability: CapabilityType>: AdvancedOperation {
 
     /// the StatusResponse is a tuple for the capabilities availability and status
     public typealias StatusResponse = (Bool, Capability.Status)
@@ -284,7 +284,7 @@ public class AuthorizedFor<Capability: CapabilityType>: Condition {
     }
 
     /// Evaluated the condition
-    public override func evaluate(operation: Operation, completion: OperationConditionResult -> Void) {
+    public override func evaluate(operation: AdvancedOperation, completion: OperationConditionResult -> Void) {
 
         guard capability.isAvailable() else {
             completion(.Failed(CapabilityError<Capability>.NotAvailable))

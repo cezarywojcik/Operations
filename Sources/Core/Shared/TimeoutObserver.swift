@@ -34,7 +34,7 @@ public struct TimeoutObserver: OperationWillExecuteObserver {
 
     - parameter operation: the `Operation` which will be cancelled if the timeout is reached.
     */
-    public func willExecuteOperation(operation: Operation) {
+    public func willExecuteOperation(operation: AdvancedOperation) {
         let when = dispatch_time(DISPATCH_TIME_NOW, Int64(timeout * Double(NSEC_PER_SEC)))
 
         dispatch_after(when, Queue.Default.queue) {

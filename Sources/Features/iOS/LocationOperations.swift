@@ -51,7 +51,7 @@ public enum LocationOperationError: ErrorType, Equatable {
 
 // MARK: - UserLocationOperation
 
-public class UserLocationOperation: Operation, CLLocationManagerDelegate, ResultOperationType {
+public class UserLocationOperation: AdvancedOperation, CLLocationManagerDelegate, ResultOperationType {
     public typealias CompletionBlockType = CLLocation -> Void
 
     private let accuracy: CLLocationAccuracy
@@ -171,7 +171,7 @@ internal extension CLGeocoder {
     }
 }
 
-public class ReverseGeocodeOperation: Operation, ResultOperationType {
+public class ReverseGeocodeOperation: AdvancedOperation, ResultOperationType {
 
     public typealias CompletionBlockType = CLPlacemark -> Void
 

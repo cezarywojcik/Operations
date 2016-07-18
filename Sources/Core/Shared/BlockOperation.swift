@@ -15,7 +15,7 @@ call this block to correctly finish the operation. It can be called
 with a nil error argument to finish with no errors. Or an `ErrorType`
 argument to finish with the supplied error.
 */
-public class BlockOperation: Operation {
+public class BlockOperation: AdvancedOperation {
 
     public typealias ContinuationBlockType = (error: ErrorType?) -> Void
     public typealias BlockType = (continueWithError: ContinuationBlockType) -> Void

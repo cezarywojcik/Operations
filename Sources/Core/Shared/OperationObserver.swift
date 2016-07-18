@@ -35,7 +35,7 @@ public protocol OperationObserverType {
 
      - parameter operation: the observed `Operation`.
     */
-    func didAttachToOperation(operation: Operation)
+    func didAttachToOperation(operation: AdvancedOperation)
 }
 
 
@@ -48,7 +48,7 @@ public extension OperationObserverType {
 
      - parameter operation: the observed `Operation`.
     */
-    func didAttachToOperation(operation: Operation) { /* No operation */ }
+    func didAttachToOperation(operation: AdvancedOperation) { /* No operation */ }
 }
 
 
@@ -64,7 +64,7 @@ public protocol OperationWillExecuteObserver: OperationObserverType {
 
      - parameter operation: the observed `Operation`.
      */
-    func willExecuteOperation(operation: Operation)
+    func willExecuteOperation(operation: AdvancedOperation)
 }
 
 
@@ -79,7 +79,7 @@ public protocol OperationWillCancelObserver: OperationObserverType {
 
      - parameter operation: the observed `Operation`.
      */
-    func willCancelOperation(operation: Operation, errors: [ErrorType])
+    func willCancelOperation(operation: AdvancedOperation, errors: [ErrorType])
 }
 
 
@@ -94,7 +94,7 @@ public protocol OperationDidCancelObserver: OperationObserverType {
 
      - parameter operation: the observed `Operation`.
      */
-    func didCancelOperation(operation: Operation)
+    func didCancelOperation(operation: AdvancedOperation)
 }
 
 
@@ -113,7 +113,7 @@ public protocol OperationDidProduceOperationObserver: OperationObserverType {
      - parameter operation: the observed `Operation`.
      - parameter newOperation: the produced `NSOperation`
      */
-    func operation(operation: Operation, didProduceOperation newOperation: NSOperation)
+    func operation(operation: AdvancedOperation, didProduceOperation newOperation: NSOperation)
 }
 
 
@@ -128,7 +128,7 @@ public protocol OperationWillFinishObserver: OperationObserverType {
      - parameter operation: the observed `Operation`.
      - parameter errors: an array of `ErrorType`s.
      */
-    func willFinishOperation(operation: Operation, errors: [ErrorType])
+    func willFinishOperation(operation: AdvancedOperation, errors: [ErrorType])
 }
 
 
@@ -144,7 +144,7 @@ public protocol OperationDidFinishObserver: OperationObserverType {
      - parameter operation: the observed `Operation`.
      - parameter errors: an array of `ErrorType`s.
      */
-    func didFinishOperation(operation: Operation, errors: [ErrorType])
+    func didFinishOperation(operation: AdvancedOperation, errors: [ErrorType])
 }
 
 

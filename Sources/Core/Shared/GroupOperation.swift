@@ -21,7 +21,7 @@ of creating Operations which may repeat themselves before
 subsequent operations can run. For example, authentication
 operations.
 */
-public class GroupOperation: Operation, OperationQueueDelegate {
+public class GroupOperation: AdvancedOperation, OperationQueueDelegate {
 
     typealias ErrorsByOperation = [NSOperation: [ErrorType]]
     internal struct Errors {
@@ -48,8 +48,8 @@ public class GroupOperation: Operation, OperationQueueDelegate {
     private let groupFinishLock = NSRecursiveLock()
     private var isAddingOperationsGroup = dispatch_group_create()
 
-    /// - returns: the OperationQueue the group runs operations on.
-    public let queue = OperationQueue()
+    /// - returns: the AdvancedOperationQueue the group runs operations on.
+    public let queue = AdvancedOperationQueue()
 
     /// - returns: the operations which have been added to the queue
     public private(set) var operations: [NSOperation] {
@@ -64,7 +64,7 @@ public class GroupOperation: Operation, OperationQueueDelegate {
     }
     private var _operations: Protector<[NSOperation]>
 
-    public override var userIntent: Operation.UserIntent {
+    public override var userIntent: AdvancedOperation.UserIntent {
         didSet {
             let (nsops, ops) = operations.splitNSOperationsAndOperations
             nsops.forEach { $0.setQualityOfServiceFromUserIntent(userIntent) }
@@ -248,7 +248,7 @@ public class GroupOperation: Operation, OperationQueueDelegate {
      when there are no more operations in the group operation, safely handling the transition of
      group operation state.
      */
-    public func operationQueue(queue: OperationQueue, willAddOperation operation: NSOperation) {
+    public func operationQueue(queue: AdvancedOperationQueue, willAddOperation operation: NSOperation) {
         guard queue === self.queue else { return }
 
         assert(!finishingOperation.executing, "Cannot add new operations to a group after the group has started to finish.")
@@ -281,7 +281,7 @@ public class GroupOperation: Operation, OperationQueueDelegate {
      operation is the finishing operation, we finish the group operation here. Else, the group is
      notified (using `operationDidFinish` that a child operation has finished.
      */
-    public func operationQueue(queue: OperationQueue, willFinishOperation operation: NSOperation, withErrors errors: [ErrorType]) {
+    public func operationQueue(queue: AdvancedOperationQueue, willFinishOperation operation: NSOperation, withErrors errors: [ErrorType]) {
         guard queue === self.queue else { return }
 
         if !errors.isEmpty {
@@ -297,7 +297,7 @@ public class GroupOperation: Operation, OperationQueueDelegate {
         }
     }
 
-    public func operationQueue(queue: OperationQueue, didFinishOperation operation: NSOperation, withErrors errors: [ErrorType]) {
+    public func operationQueue(queue: AdvancedOperationQueue, didFinishOperation operation: NSOperation, withErrors errors: [ErrorType]) {
         guard queue === self.queue else { return }
 
         if operation === finishingOperation {
@@ -306,7 +306,7 @@ public class GroupOperation: Operation, OperationQueueDelegate {
         }
     }
 
-    public func operationQueue(queue: OperationQueue, willProduceOperation operation: NSOperation) {
+    public func operationQueue(queue: AdvancedOperationQueue, willProduceOperation operation: NSOperation) {
         guard queue === self.queue else { return }
 
         // Ensure that produced operations are added to GroupOperation's
@@ -437,7 +437,7 @@ public struct WillAddChildObserver: GroupOperationWillAddChildObserver {
     }
 
     /// Base OperationObserverType method
-    public func didAttachToOperation(operation: Operation) {
+    public func didAttachToOperation(operation: AdvancedOperation) {
         didAttachToOperation?(operation: operation)
     }
 }
@@ -573,7 +573,7 @@ private extension GroupOperation {
     }
 }
 
-private extension OperationQueue {
+private extension AdvancedOperationQueue {
     private func _addCanFinishOperation(canFinishOperation: GroupOperation.CanFinishOperation) {
         // Do not add observers (not needed - CanFinishOperation is an implementation detail of GroupOperation)
         // Do not add conditions (CanFinishOperation has none)

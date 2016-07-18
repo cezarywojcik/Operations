@@ -37,7 +37,7 @@ import Foundation
  data-processing operation conform to `InjectionOperationType`.
 
  ```swift
- class DataProcessing: Operation, InjectionOperationType {
+ class DataProcessing: AdvancedOperation, InjectionOperationType {
     // etc
  }
  ```
@@ -75,7 +75,7 @@ import Foundation
 */
 public protocol InjectionOperationType: class { }
 
-extension InjectionOperationType where Self: Operation {
+extension InjectionOperationType where Self: AdvancedOperation {
 
     /**
      Access the completed dependency operation before `self` is
@@ -87,7 +87,7 @@ extension InjectionOperationType where Self: Operation {
      operation, and an array of `ErrorType`, and returns Void.
      - returns: `self` - so that injections can be chained together.
     */
-    public func injectResultFromDependency<T where T: Operation>(dep: T, block: (operation: Self, dependency: T, errors: [ErrorType]) -> Void) -> Self {
+    public func injectResultFromDependency<T where T: AdvancedOperation>(dep: T, block: (operation: Self, dependency: T, errors: [ErrorType]) -> Void) -> Self {
         dep.addObserver(WillFinishObserver { [weak self] op, errors in
             if let strongSelf = self, dep = op as? T {
                 block(operation: strongSelf, dependency: dep, errors: errors)
@@ -95,10 +95,10 @@ extension InjectionOperationType where Self: Operation {
         })
         dep.addObserver(DidCancelObserver { [weak self] op in
             if let strongSelf = self, _ = op as? T {
-                (strongSelf as Operation).cancel()
+                (strongSelf as AdvancedOperation).cancel()
             }
         })
-        (self as Operation).addDependency(dep)
+        (self as AdvancedOperation).addDependency(dep)
         return self
     }
 }
@@ -142,7 +142,7 @@ public enum AutomaticInjectionError: ErrorType {
     case RequirementNotSatisfied
 }
 
-extension AutomaticInjectionOperationType where Self: Operation {
+extension AutomaticInjectionOperationType where Self: AdvancedOperation {
 
     /**
      Inject the result from one operation as the requirement of
@@ -150,13 +150,13 @@ extension AutomaticInjectionOperationType where Self: Operation {
      data processing operation classes:
 
      ```swift
-     class DataRetrieval: Operation, ResultOperationType {
+     class DataRetrieval: AdvancedOperation, ResultOperationType {
         var result: NSData? = .None
 
         // etc etc
      }
 
-     class DataProcessing: Operation, AutomaticInjectionOperationType {
+     class DataProcessing: AdvancedOperation, AutomaticInjectionOperationType {
         var requirement: NSData? = .None
 
         // etc etc
@@ -175,7 +175,7 @@ extension AutomaticInjectionOperationType where Self: Operation {
      - parameter dep: an operation of type T
      - returns: the receiver
     */
-    public func injectResultFromDependency<T where T: Operation, T: ResultOperationType, T.Result == Requirement>(dep: T) -> Self {
+    public func injectResultFromDependency<T where T: AdvancedOperation, T: ResultOperationType, T.Result == Requirement>(dep: T) -> Self {
         return injectResultFromDependency(dep) { [weak self] operation, dependency, errors in
             if errors.isEmpty {
                 self?.requirement = dependency.result
@@ -202,7 +202,7 @@ extension AutomaticInjectionOperationType where Self: Operation {
      - parameter dep: an operation of type T
      - returns: the receiver
     */
-    public func requireResultFromDependency<T where T: Operation, T: ResultOperationType, T.Result == Requirement>(dep: T) -> Self {
+    public func requireResultFromDependency<T where T: AdvancedOperation, T: ResultOperationType, T.Result == Requirement>(dep: T) -> Self {
         if conditions.filter({ return $0 is NoFailedDependenciesCondition }).count < 1 {
             addCondition(NoFailedDependenciesCondition())
         }
@@ -238,7 +238,7 @@ public protocol Executor: ResultOperationType, AutomaticInjectionOperationType {
  call execute on the Executor, and catch any thrown errors. If the operation is cancelled, it
  will call cancel on the executor.
  */
-public final class Execute<E: Executor>: Operation, ResultOperationType, AutomaticInjectionOperationType {
+public final class Execute<E: Executor>: AdvancedOperation, ResultOperationType, AutomaticInjectionOperationType {
 
     /// - returns: executor, the instance of the Executor
     public let executor: E

@@ -140,7 +140,7 @@ class OperationKVOTests: OperationTests {
     }
 
     func test__nsoperation_kvo__operation_state_transition_to_executing() {
-        class NoFinishOperation: Operation {
+        class NoFinishOperation: AdvancedOperation {
             override func execute() {
                 // do not finish
             }
@@ -157,7 +157,7 @@ class OperationKVOTests: OperationTests {
     }
 
     func test__nsoperation_kvo__operation_state_transition_to_executing_via_queue() {
-        class NoFinishOperation: Operation {
+        class NoFinishOperation: AdvancedOperation {
             var didExecuteExpectation: XCTestExpectation
             init(didExecuteExpectation: XCTestExpectation) {
                 self.didExecuteExpectation = didExecuteExpectation
