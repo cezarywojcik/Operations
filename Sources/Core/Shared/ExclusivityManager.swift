@@ -89,3 +89,19 @@ extension ExclusivityManager {
 #endif
     }
 }
+
+public class ExclusivityManagerDebug {
+
+    public static func debugData() -> OperationDebugData {
+        let allCategoriesDebugData: [OperationDebugData] =
+            ExclusivityManager.sharedInstance.operations.flatMap { (category, operationsArray) in
+                guard !operationsArray.isEmpty else {
+                    return nil
+                }
+                let categoryDebugData = operationsArray.map { $0.debugData() }
+                return OperationDebugData(description: category, subOperations: categoryDebugData)
+        }
+        return OperationDebugData(description: "\(self)", subOperations: allCategoriesDebugData)
+    }
+
+}

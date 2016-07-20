@@ -24,7 +24,7 @@ Operation builds on `NSOperation` in a few simple ways.
 to be notified of lifecycle events in the operation.
 
 */
-public class AdvancedOperation: NSOperation {
+public class AdvancedOperation: NSOperation, OperationDebuggable {
 
     private enum State: Int, Comparable {
 
@@ -401,6 +401,25 @@ public class AdvancedOperation: NSOperation {
             _finish([], fromCancel: true)
         }
     }
+
+    /**
+     This method is used for debugging the current state of an `Operation`.
+
+     - returns: An `OperationDebugData` object containing debug data for the current `Operation`.
+     */
+    public func debugData() -> OperationDebugData {
+        return OperationDebugData(
+            description: "Operation: \(self)",
+            properties: [
+                "cancelled": String(cancelled),
+                "state": String(state),
+                "errorCount": String(errors.count),
+                "QOS": String(qualityOfService)
+            ],
+            conditions: conditions.map { String($0) },
+            dependencies: dependencies.map { ($0 as? OperationDebuggable)?.debugData() ?? $0.debugDataNSOperation() })
+    }
+
 }
 
 // swiftlint:enable type_body_length

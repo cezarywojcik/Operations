@@ -333,6 +333,22 @@ public class GroupOperation: AdvancedOperation, OperationQueueDelegate {
             dispatch_group_leave(isAddingOperationsGroup)
         }
     }
+
+    /**
+     This method is used for debugging the current state of a `GroupOperation`.
+
+     - returns: An `OperationDebugData` object containing debug data for the current `GroupOperation`.
+     */
+    override public func debugData() -> OperationDebugData {
+        let operationData = super.debugData()
+        let queueData = queue.debugData()
+        return OperationDebugData(
+            description: "GroupOperation: \(self)",
+            properties: operationData.properties,
+            conditions: operationData.conditions,
+            dependencies:  operationData.dependencies,
+            subOperations: queueData.subOperations)
+    }
 }
 
 public extension GroupOperation {
