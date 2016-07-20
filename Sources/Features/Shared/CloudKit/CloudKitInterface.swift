@@ -446,6 +446,13 @@ extension CKModifyRecordsOperation: CKModifyRecordsOperationType, AssociatedErro
         get { return recordIDsToDelete }
         set { recordIDsToDelete = newValue }
     }
+
+    public var atomic: Bool {
+        @objc(_isAtomic)
+        get { return self.atomic }
+        @objc(_setIsAtomic:)
+        set { self.atomic = newValue }
+    }
 }
 
 extension CKModifySubscriptionsOperation: CKModifySubscriptionsOperationType, AssociatedErrorType, BatchModifyOperationType {

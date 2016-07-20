@@ -68,6 +68,16 @@ extension ExclusivityManager {
     /// This should only be used as part of the unit testing
     /// and in v2+ will not be publically accessible
     internal func __tearDownForUnitTesting() {
+#if swift(>=2.3)
+        Dispatch.dispatch_sync(queue) {
+            for (category, operations) in self.operations {
+                for operation in operations {
+                    operation.cancel()
+                    self._removeOperation(operation, category: category)
+                }
+            }
+        }
+#else
         dispatch_sync(queue) {
             for (category, operations) in self.operations {
                 for operation in operations {
@@ -76,5 +86,6 @@ extension ExclusivityManager {
                 }
             }
         }
+#endif
     }
 }

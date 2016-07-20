@@ -144,7 +144,7 @@ class UserIntentOperationTests: OperationTests {
 
     func test__getting_user_intent_default_background() {
         let operation = TestOperation()
-        XCTAssertEqual(operation.userIntent, Operation.UserIntent.None)
+        XCTAssertEqual(operation.userIntent, AdvancedOperation.UserIntent.None)
     }
 
     func test__set_user_intent__initiated() {
@@ -167,7 +167,7 @@ class UserIntentOperationTests: OperationTests {
     }
 
     func test__user_intent__equality() {
-        XCTAssertNotEqual(Operation.UserIntent.Initiated, Operation.UserIntent.SideEffect)
+        XCTAssertNotEqual(AdvancedOperation.UserIntent.Initiated, AdvancedOperation.UserIntent.SideEffect)
     }
 }
 

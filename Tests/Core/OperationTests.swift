@@ -153,7 +153,7 @@ class OperationTests: XCTestCase {
     override func setUp() {
         super.setUp()
         LogManager.severity = .Fatal
-        queue = OperationQueue()
+        queue = AdvancedOperationQueue()
         delegate = TestQueueDelegate()
         queue.delegate = delegate
     }
@@ -186,7 +186,7 @@ class OperationTests: XCTestCase {
         waitForExpectationsWithTimeout(3, handler: nil)
     }
 
-    func waitForOperations(operations: Operation..., withExpectationDescription text: String = #function) {
+    func waitForOperations(operations: AdvancedOperation..., withExpectationDescription text: String = #function) {
         for (i, op) in operations.enumerate() {
             addCompletionBlockToTestOperation(op, withExpectationDescription: "\(i), \(text)")
         }

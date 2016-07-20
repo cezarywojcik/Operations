@@ -26,9 +26,15 @@ struct Lock: ReadWriteLock {
 
     mutating func read<T>(block: () -> T) -> T {
         var object: T!
+#if swift(>=2.3)
+        Dispatch.dispatch_sync(queue) {
+            object = block()
+        }
+#else
         dispatch_sync(queue) {
             object = block()
         }
+#endif
         return object
     }
 
@@ -51,7 +57,7 @@ internal class Protector<T> {
         self.ward = ward
     }
 
-    func read<U>(block: T -> U) -> U {
+    func read<U>(block: (T) -> U) -> U {
         return lock.read { [unowned self] in block(self.ward) }
     }
 
@@ -91,7 +97,11 @@ public func dispatch_sync(queue: dispatch_queue_t, _ block: () throws -> Void) r
         }
     }
 
+#if swift(>=2.3)
+    Dispatch.dispatch_sync(queue, catcher)
+#else
     dispatch_sync(queue, catcher)
+#endif
 
     if let failure = failure {
         try { throw failure }()

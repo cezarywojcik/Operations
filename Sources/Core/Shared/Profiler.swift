@@ -169,6 +169,24 @@ public final class OperationProfiler: Identifiable, Equatable {
     }
 
     func addMetricNow(now: NSTimeInterval = CFAbsoluteTimeGetCurrent() as NSTimeInterval, forEvent event: OperationEvent) {
+#if swift(>=2.3)
+        Dispatch.dispatch_sync(queue) { [unowned self] in
+            switch event {
+            case .Attached:
+                self.result = self.result.attach(now)
+            case .Started:
+                self.result = self.result.start(now)
+            case .Cancelled:
+                self.result = self.result.cancel(now)
+                self.finishedOrCancelled = true
+            case .Finished:
+                self.result = self.result.finish(now)
+                self.finishedOrCancelled = true
+            default:
+                break
+            }
+        }
+#else
         dispatch_sync(queue) { [unowned self] in
             switch event {
             case .Attached:
@@ -185,6 +203,7 @@ public final class OperationProfiler: Identifiable, Equatable {
                 break
             }
         }
+#endif
         finish()
     }
 
@@ -192,9 +211,15 @@ public final class OperationProfiler: Identifiable, Equatable {
         if let operation = operation as? AdvancedOperation {
             let profiler = OperationProfiler(parent: self)
             operation.addObserver(profiler)
+#if swift(>=2.3)
+            Dispatch.dispatch_sync(queue) { [unowned self] in
+                self.children.append(operation.identity)
+            }
+#else
             dispatch_sync(queue) { [unowned self] in
                 self.children.append(operation.identity)
             }
+#endif
         }
     }
 
@@ -219,12 +244,21 @@ extension OperationProfiler.Reporter: OperationProfilerReporter {
 extension OperationProfiler: OperationProfilerReporter {
 
     public func finishedProfilingWithResult(result: ProfileResult) {
+#if swift(>=2.3)
+        Dispatch.dispatch_sync(queue) { [unowned self] in
+            if let index = self.children.indexOf(result.identity) {
+                self.result = self.result.addChild(result)
+                self.children.removeAtIndex(index)
+            }
+        }
+#else
         dispatch_sync(queue) { [unowned self] in
             if let index = self.children.indexOf(result.identity) {
                 self.result = self.result.addChild(result)
                 self.children.removeAtIndex(index)
             }
         }
+#endif
         finish()
     }
 }
@@ -232,9 +266,15 @@ extension OperationProfiler: OperationProfilerReporter {
 extension OperationProfiler: OperationObserverType {
 
     public func didAttachToOperation(operation: AdvancedOperation) {
+#if swift(>=2.3)
+        Dispatch.dispatch_sync(queue) { [unowned self] in
+            self.result = self.result.setIdentity(operation.identity)
+        }
+#else
         dispatch_sync(queue) { [unowned self] in
             self.result = self.result.setIdentity(operation.identity)
         }
+#endif
         addMetricNow(forEvent: .Attached)
     }
 }
