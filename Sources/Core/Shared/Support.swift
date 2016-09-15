@@ -10,7 +10,7 @@ import Foundation
 
 extension Dictionary {
 
-    internal init<Sequence: SequenceType where Sequence.Generator.Element == Value>(sequence: Sequence, keyMapper: Value -> Key?) {
+    internal init<Sequence: Swift.Sequence>(sequence: Sequence, keyMapper: (Value) -> Key?) where Sequence.Iterator.Element == Value {
         self.init()
         for item in sequence {
             if let key = keyMapper(item) {

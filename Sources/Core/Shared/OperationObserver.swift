@@ -9,17 +9,17 @@
 import Foundation
 
 public enum OperationEvent: Int {
-    case Attached = 0, Started, Cancelled, Produced, Finished
+    case attached = 0, started, cancelled, produced, finished
 }
 
 extension OperationEvent: CustomStringConvertible {
     public var description: String {
         switch self {
-        case .Attached: return "Attached"
-        case .Started: return "Started"
-        case .Cancelled: return "Cancelled"
-        case .Produced: return "Produced"
-        case .Finished: return "Finished"
+        case .attached: return "Attached"
+        case .started: return "Started"
+        case .cancelled: return "Cancelled"
+        case .produced: return "Produced"
+        case .finished: return "Finished"
         }
     }
 }
@@ -35,7 +35,7 @@ public protocol OperationObserverType {
 
      - parameter operation: the observed `Operation`.
     */
-    func didAttachToOperation(operation: AdvancedOperation)
+    func didAttachToOperation(_ operation: AdvancedOperation)
 }
 
 
@@ -48,7 +48,7 @@ public extension OperationObserverType {
 
      - parameter operation: the observed `Operation`.
     */
-    func didAttachToOperation(operation: AdvancedOperation) { /* No operation */ }
+    func didAttachToOperation(_ operation: AdvancedOperation) { /* No operation */ }
 }
 
 
@@ -64,7 +64,7 @@ public protocol OperationWillExecuteObserver: OperationObserverType {
 
      - parameter operation: the observed `Operation`.
      */
-    func willExecuteOperation(operation: AdvancedOperation)
+    func willExecuteOperation(_ operation: AdvancedOperation)
 }
 
 
@@ -79,7 +79,7 @@ public protocol OperationWillCancelObserver: OperationObserverType {
 
      - parameter operation: the observed `Operation`.
      */
-    func willCancelOperation(operation: AdvancedOperation, errors: [ErrorType])
+    func willCancelOperation(_ operation: AdvancedOperation, errors: [Error])
 }
 
 
@@ -94,7 +94,7 @@ public protocol OperationDidCancelObserver: OperationObserverType {
 
      - parameter operation: the observed `Operation`.
      */
-    func didCancelOperation(operation: AdvancedOperation)
+    func didCancelOperation(_ operation: AdvancedOperation)
 }
 
 
@@ -113,7 +113,7 @@ public protocol OperationDidProduceOperationObserver: OperationObserverType {
      - parameter operation: the observed `Operation`.
      - parameter newOperation: the produced `NSOperation`
      */
-    func operation(operation: AdvancedOperation, didProduceOperation newOperation: NSOperation)
+    func operation(_ operation: AdvancedOperation, didProduceOperation newOperation: Operation)
 }
 
 
@@ -128,7 +128,7 @@ public protocol OperationWillFinishObserver: OperationObserverType {
      - parameter operation: the observed `Operation`.
      - parameter errors: an array of `ErrorType`s.
      */
-    func willFinishOperation(operation: AdvancedOperation, errors: [ErrorType])
+    func willFinishOperation(_ operation: AdvancedOperation, errors: [Error])
 }
 
 
@@ -144,7 +144,7 @@ public protocol OperationDidFinishObserver: OperationObserverType {
      - parameter operation: the observed `Operation`.
      - parameter errors: an array of `ErrorType`s.
      */
-    func didFinishOperation(operation: AdvancedOperation, errors: [ErrorType])
+    func didFinishOperation(_ operation: AdvancedOperation, errors: [Error])
 }
 
 

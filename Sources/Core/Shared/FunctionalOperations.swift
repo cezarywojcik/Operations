@@ -13,10 +13,10 @@ import Foundation
 
  Abstract but a concrete class for a ResultOperationType.
 */
-public class ResultOperation<Result>: AdvancedOperation, ResultOperationType {
+open class ResultOperation<Result>: AdvancedOperation, ResultOperationType {
 
     /// - returns: the Result
-    public var result: Result! = nil
+    open var result: Result! = nil
 
     public init(result: Result! = nil) {
         self.result = result
@@ -24,7 +24,7 @@ public class ResultOperation<Result>: AdvancedOperation, ResultOperationType {
         name = "Result"
     }
 
-    public override func execute() {
+    open override func execute() {
         // no-op
         finish()
     }
@@ -42,12 +42,12 @@ public class ResultOperation<Result>: AdvancedOperation, ResultOperationType {
  it will be executed asynshronously.
 
 */
-public class MapOperation<T, U>: ResultOperation<U>, AutomaticInjectionOperationType {
+open class MapOperation<T, U>: ResultOperation<U>, AutomaticInjectionOperationType {
 
     /// - returns: the requirement an optional type T
-    public var requirement: T! = nil
+    open var requirement: T! = nil
 
-    let transform: T -> U
+    let transform: (T) -> U
 
     /**
      Initializes an instance with an optional starting requirement, and an
@@ -58,16 +58,16 @@ public class MapOperation<T, U>: ResultOperation<U>, AutomaticInjectionOperation
      - parameter transform: a closure which maps a non-optional T to U!. Note
      that this closure will only be run if the requirement is non-nil.
     */
-    public init(input: T! = .None, transform: T -> U) {
+    public init(input: T! = .none, transform: @escaping (T) -> U) {
         self.requirement = input
         self.transform = transform
         super.init(result: nil)
         name = "Map"
     }
 
-    public override func execute() {
+    open override func execute() {
         guard let requirement = requirement else {
-            finish(AutomaticInjectionError.RequirementNotSatisfied)
+            finish(AutomaticInjectionError.requirementNotSatisfied)
             return
         }
         result = transform(requirement)
@@ -87,14 +87,14 @@ extension ResultOperationType where Self: AdvancedOperation {
      ```
 
     */
-    public func mapOperation<U>(transform: Result -> U) -> MapOperation<Result, U> {
+    public func mapOperation<U>(_ transform: @escaping (Result) -> U) -> MapOperation<Result, U> {
         let map: MapOperation<Result, U> = MapOperation(transform: transform)
         map.injectResultFromDependency(self) { operation, dependency, errors in
             if errors.isEmpty {
                 operation.requirement = dependency.result
             }
             else {
-                operation.cancelWithError(AutomaticInjectionError.DependencyFinishedWithErrors(errors))
+                operation.cancelWithError(AutomaticInjectionError.dependencyFinishedWithErrors(errors))
             }
         }
         return map
@@ -113,14 +113,14 @@ extension ResultOperationType where Self: AdvancedOperation {
  it will be executed asynshronously.
 
 */
-public class FilterOperation<Element>: ResultOperation<Array<Element>>, AutomaticInjectionOperationType {
+open class FilterOperation<Element>: ResultOperation<Array<Element>>, AutomaticInjectionOperationType {
 
     /// - returns: the requirement an optional type T
-    public var requirement: Array<Element> = []
+    open var requirement: Array<Element> = []
 
-    let filter: Element -> Bool
+    let filter: (Element) -> Bool
 
-    public init(source: Array<Element> = [], includeElement: Element -> Bool) {
+    public init(source: Array<Element> = [], includeElement: @escaping (Element) -> Bool) {
         self.requirement = source
         self.filter = includeElement
         super.init(result: [])
@@ -133,7 +133,7 @@ public class FilterOperation<Element>: ResultOperation<Array<Element>>, Automati
     }
 }
 
-extension ResultOperationType where Self: AdvancedOperation, Result: SequenceType {
+extension ResultOperationType where Self: AdvancedOperation, Result: Sequence {
 
     /**
      Filter the result of the receiver `Operation` which conforms to `ResultOperationType` where
@@ -145,14 +145,14 @@ extension ResultOperationType where Self: AdvancedOperation, Result: SequenceTyp
      queue.addOperations(getLocation, toString)
      ```
     */
-    public func filterOperation(includeElement: Result.Generator.Element -> Bool) -> FilterOperation<Result.Generator.Element> {
-        let filter: FilterOperation<Result.Generator.Element> = FilterOperation(includeElement: includeElement)
+    public func filterOperation(_ includeElement: @escaping (Result.Iterator.Element) -> Bool) -> FilterOperation<Result.Iterator.Element> {
+        let filter: FilterOperation<Result.Iterator.Element> = FilterOperation(includeElement: includeElement)
         filter.injectResultFromDependency(self) { operation, dependency, errors in
             if errors.isEmpty {
                 operation.requirement = Array(dependency.result)
             }
             else {
-                operation.cancelWithError(AutomaticInjectionError.DependencyFinishedWithErrors(errors))
+                operation.cancelWithError(AutomaticInjectionError.dependencyFinishedWithErrors(errors))
             }
         }
         return filter
@@ -171,15 +171,15 @@ extension ResultOperationType where Self: AdvancedOperation, Result: SequenceTyp
  it will be executed asynshronously.
 
 */
-public class ReduceOperation<Element, U>: ResultOperation<U>, AutomaticInjectionOperationType {
+open class ReduceOperation<Element, U>: ResultOperation<U>, AutomaticInjectionOperationType {
 
     /// - returns: the requirement an optional type T
-    public var requirement: Array<Element> = []
+    open var requirement: Array<Element> = []
 
     let initial: U
     let combine: (U, Element) -> U
 
-    public init(source: Array<Element> = [], initial: U, combine: (U, Element) -> U) {
+    public init(source: Array<Element> = [], initial: U, combine: @escaping (U, Element) -> U) {
         self.requirement = source
         self.initial = initial
         self.combine = combine
@@ -188,12 +188,12 @@ public class ReduceOperation<Element, U>: ResultOperation<U>, AutomaticInjection
     }
 
     public final override func execute() {
-        result = requirement.reduce(initial, combine: combine)
+        result = requirement.reduce(initial, combine)
         finish()
     }
 }
 
-extension ResultOperationType where Self: AdvancedOperation, Result: SequenceType {
+extension ResultOperationType where Self: AdvancedOperation, Result: Sequence {
 
     /**
      Reduce the result of the receiver `Operation` which conforms to `ResultOperationType` where
@@ -208,14 +208,14 @@ extension ResultOperationType where Self: AdvancedOperation, Result: SequenceTyp
      ```
 
     */
-    public func reduceOperation<U>(initial: U, combine: (U, Result.Generator.Element) -> U) -> ReduceOperation<Result.Generator.Element, U> {
-        let reduce: ReduceOperation<Result.Generator.Element, U> = ReduceOperation(initial: initial, combine: combine)
+    public func reduceOperation<U>(_ initial: U, combine: @escaping (U, Result.Iterator.Element) -> U) -> ReduceOperation<Result.Iterator.Element, U> {
+        let reduce: ReduceOperation<Result.Iterator.Element, U> = ReduceOperation(initial: initial, combine: combine)
         reduce.injectResultFromDependency(self) { operation, dependency, errors in
             if errors.isEmpty {
                 operation.requirement = Array(dependency.result)
             }
             else {
-                operation.cancelWithError(AutomaticInjectionError.DependencyFinishedWithErrors(errors))
+                operation.cancelWithError(AutomaticInjectionError.dependencyFinishedWithErrors(errors))
             }
         }
         return reduce

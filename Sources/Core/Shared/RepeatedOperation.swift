@@ -51,20 +51,20 @@ import Foundation
 */
 public enum WaitStrategy {
 
-    case Immediate
-    case Fixed(NSTimeInterval)
-    case Random((minimum: NSTimeInterval, maximum: NSTimeInterval))
-    case Incrementing((initial: NSTimeInterval, increment: NSTimeInterval))
-    case Exponential((period: NSTimeInterval, maximum: NSTimeInterval))
-    case Fibonacci((period: NSTimeInterval, maximum: NSTimeInterval))
+    case immediate
+    case fixed(TimeInterval)
+    case random((minimum: TimeInterval, maximum: TimeInterval))
+    case incrementing((initial: TimeInterval, increment: TimeInterval))
+    case exponential((period: TimeInterval, maximum: TimeInterval))
+    case fibonacci((period: TimeInterval, maximum: TimeInterval))
 
     internal func generator() -> IntervalGenerator {
         return IntervalGenerator(self)
     }
 }
 
-public struct RepeatedPayload<T where T: NSOperation> {
-    public typealias ConfigureBlock = T -> Void
+public struct RepeatedPayload<T> where T: Operation {
+    public typealias ConfigureBlock = (T) -> Void
 
     public let delay: Delay?
     public let operation: T
@@ -132,24 +132,24 @@ public struct RepeatedPayload<T where T: NSOperation> {
  - See: Repeatable
 
 */
-public class RepeatedOperation<T where T: NSOperation>: GroupOperation {
+open class RepeatedOperation<T>: GroupOperation where T: Operation {
     public typealias Payload = RepeatedPayload<T>
 
-    private var generator: AnyGenerator<Payload>
+    fileprivate var generator: AnyIterator<Payload>
 
     /// - returns: the previous operation which was executed.
-    public internal(set) var previous: T? = .None
+    open internal(set) var previous: T? = .none
 
     /// - returns: the current operation being executed.
-    public internal(set) var current: T
+    open internal(set) var current: T
 
     /// - return: the count of operations that have executed.
-    public internal(set) var count: Int = 1
+    open internal(set) var count: Int = 1
 
-    internal private(set) var configure: Payload.ConfigureBlock = { _ in }
+    internal fileprivate(set) var configure: Payload.ConfigureBlock = { _ in }
 
-    static func createPayloadGeneratorWithMaxCount(max: Int? = .None, generator gen: AnyGenerator<Payload>) -> AnyGenerator<Payload> {
-        return max.map { AnyGenerator(FiniteGenerator(gen, limit: $0 - 1)) } ?? gen
+    static func createPayloadGeneratorWithMaxCount(_ max: Int? = .none, generator gen: AnyIterator<Payload>) -> AnyIterator<Payload> {
+        return max.map { AnyIterator(FiniteGenerator(gen, limit: $0 - 1)) } ?? gen
     }
 
     /**
@@ -159,7 +159,7 @@ public class RepeatedOperation<T where T: NSOperation>: GroupOperation {
      the maximum number of operations which will be executed.
      - parameter generator: the AnyGenerator<(Delay?, T)> generator.
     */
-    public init(maxCount max: Int? = .None, generator gen: AnyGenerator<Payload>) {
+    public init(maxCount max: Int? = .none, generator gen: AnyIterator<Payload>) {
 
         guard let payload = gen.next() else {
             preconditionFailure("Operation Generator must return an instance initially.")
@@ -181,17 +181,17 @@ public class RepeatedOperation<T where T: NSOperation>: GroupOperation {
      - parameter delay: a generator with Delay element.
      - parameter generator: a generator with T element.
      */
-    public init<D, G where D: GeneratorType, D.Element == Delay, G: GeneratorType, G.Element == T>(maxCount max: Int? = .None, delay: D, generator gen: G) {
+    public init<D, G>(maxCount max: Int? = .none, delay: D, generator gen: G) where D: IteratorProtocol, D.Element == Delay, G: IteratorProtocol, G.Element == T {
 
         let tuple = TupleGenerator(primary: gen, secondary: delay)
-        var mapped = MapGenerator(tuple) { RepeatedPayload(delay: $0.0, operation: $0.1, configure: .None) }
+        var mapped = MapGenerator(tuple) { RepeatedPayload(delay: $0.0, operation: $0.1, configure: .none) }
 
         guard let payload = mapped.next() else {
             preconditionFailure("Operation Generator must return an instance initially.")
         }
 
         current = payload.operation
-        generator = RepeatedOperation<T>.createPayloadGeneratorWithMaxCount(max, generator: AnyGenerator(mapped))
+        generator = RepeatedOperation<T>.createPayloadGeneratorWithMaxCount(max, generator: AnyIterator(mapped))
 
         super.init(operations: [])
         name = "Repeated Operation <\(T.self)>"
@@ -227,24 +227,24 @@ public class RepeatedOperation<T where T: NSOperation>: GroupOperation {
      - parameter strategy: a WaitStrategy which defaults to a 0.1 second fixed interval.
      - parameter generator: a generic generator which has an Element equal to T.
      */
-    public init<G where G: GeneratorType, G.Element == T>(maxCount max: Int? = .None, strategy: WaitStrategy = .Fixed(0.1), generator gen: G) {
+    public init<G>(maxCount max: Int? = .none, strategy: WaitStrategy = .fixed(0.1), generator gen: G) where G: IteratorProtocol, G.Element == T {
 
-        let delay = MapGenerator(strategy.generator()) { Delay.By($0) }
+        let delay = MapGenerator(strategy.generator()) { Delay.by($0) }
         let tuple = TupleGenerator(primary: gen, secondary: delay)
-        var mapped = MapGenerator(tuple) { RepeatedPayload(delay: $0.0, operation: $0.1, configure: .None) }
+        var mapped = MapGenerator(tuple) { RepeatedPayload(delay: $0.0, operation: $0.1, configure: .none) }
 
         guard let payload = mapped.next() else {
             preconditionFailure("Operation Generator must return an instance initially.")
         }
 
         current = payload.operation
-        generator = RepeatedOperation<T>.createPayloadGeneratorWithMaxCount(max, generator: AnyGenerator(mapped))
+        generator = RepeatedOperation<T>.createPayloadGeneratorWithMaxCount(max, generator: AnyIterator(mapped))
         super.init(operations: [])
         name = "Repeated Operation <\(T.self)>"
     }
 
     /// Public override of execute which configures and adds the first operation
-    public override func execute() {
+    open override func execute() {
         configure(current)
         addOperation(current)
         super.execute()
@@ -261,7 +261,7 @@ public class RepeatedOperation<T where T: NSOperation>: GroupOperation {
      say `Operation` instead of `MyOperation` (i.e. your specific
      operation which should be repeated).
      */
-    public override func willAttemptRecoveryFromErrors(errors: [ErrorType], inOperation operation: NSOperation) -> Bool {
+    open override func willAttemptRecoveryFromErrors(_ errors: [Error], inOperation operation: Operation) -> Bool {
         addNextOperation(operation === current)
         return super.willAttemptRecoveryFromErrors(errors, inOperation: operation)
     }
@@ -277,7 +277,7 @@ public class RepeatedOperation<T where T: NSOperation>: GroupOperation {
      say `Operation` instead of `MyOperation` (i.e. your specific
      operation which should be repeated).
     */
-    public override func willFinishOperation(operation: NSOperation) {
+    open override func willFinishOperation(_ operation: Operation) {
         addNextOperation(operation === current)
     }
 
@@ -298,8 +298,9 @@ public class RepeatedOperation<T where T: NSOperation>: GroupOperation {
      to return true. Subclasses may inject additional logic here which
      can prevent another operation from being added.
     */
-    public func addNextOperation(@autoclosure shouldAddNext: () -> Bool = true) -> Bool {
-        guard !cancelled && shouldAddNext(), let payload = next() else { return false }
+    @discardableResult
+    open func addNextOperation(_ shouldAddNext: @autoclosure () -> Bool = true) -> Bool {
+        guard !isCancelled && shouldAddNext(), let payload = next() else { return false }
 
         log.verbose("will add next operation: \(payload.operation)")
 
@@ -327,7 +328,7 @@ public class RepeatedOperation<T where T: NSOperation>: GroupOperation {
      allow subclasses to override and configure the operation
      further before it is added.
     */
-    public func next() -> Payload? {
+    open func next() -> Payload? {
         return generator.next()
     }
 
@@ -341,7 +342,7 @@ public class RepeatedOperation<T where T: NSOperation>: GroupOperation {
 
      - parameter block: a block which receives an instance of T
     */
-    public func addConfigureBlock(block: Payload.ConfigureBlock) {
+    open func addConfigureBlock(_ block: @escaping Payload.ConfigureBlock) {
         let config = configure
         configure = { operation in
             config(operation)
@@ -354,7 +355,7 @@ public class RepeatedOperation<T where T: NSOperation>: GroupOperation {
 
      - parameter block: a block which receives an instance of T
      */
-    public func replaceConfigureBlock(block: Payload.ConfigureBlock) {
+    open func replaceConfigureBlock(_ block: @escaping Payload.ConfigureBlock) {
         configure = block
         log.verbose("did replace configure block.")
     }

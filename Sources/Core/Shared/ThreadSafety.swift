@@ -9,84 +9,78 @@
 import Foundation
 
 protocol ReadWriteLock {
-    mutating func read<T>(block: () -> T) -> T
-    mutating func write(block: () -> Void, completion: (() -> Void)?)
+    mutating func read<T>(_ block: @escaping () -> T) -> T
+    mutating func write(_ block: @escaping () -> Void, completion: (() -> Void)?)
 }
 
 extension ReadWriteLock {
 
-    mutating func write(block: () -> Void) {
+    mutating func write(_ block: @escaping () -> Void) {
         write(block, completion: nil)
     }
 }
 
 struct Lock: ReadWriteLock {
 
-    let queue = Queue.Initiated.concurrent("me.danthorpe.Operations.Lock")
+    let queue = Queue.initiated.concurrent("me.danthorpe.Operations.Lock")
 
-    mutating func read<T>(block: () -> T) -> T {
+    mutating func read<T>(_ block: @escaping () -> T) -> T {
         var object: T!
-#if swift(>=2.3)
-        Dispatch.dispatch_sync(queue) {
+        dispatch_sync_legacy(queue: queue) {
             object = block()
         }
-#else
-        dispatch_sync(queue) {
-            object = block()
-        }
-#endif
         return object
     }
 
-    mutating func write(block: () -> Void, completion: (() -> Void)?) {
-        dispatch_barrier_async(queue) {
+    mutating func write(_ block: @escaping () -> Void, completion: (() -> Void)?) {
+        queue.async(flags: .barrier, execute: {
             block()
             if let completion = completion {
-                dispatch_async(Queue.Main.queue, completion)
+                Queue.main.queue.async(execute: completion)
             }
-        }
+        }) 
     }
 }
 
 internal class Protector<T> {
 
-    private var lock: ReadWriteLock = Lock()
-    private var ward: T
+    fileprivate var lock: ReadWriteLock = Lock()
+    fileprivate var ward: T
 
     init(_ ward: T) {
         self.ward = ward
     }
 
-    func read<U>(block: (T) -> U) -> U {
+    func read<U>(_ block: @escaping (T) -> U) -> U {
         return lock.read { [unowned self] in block(self.ward) }
     }
 
-    func write(block: (inout T) -> Void) {
+    func write(_ block: @escaping (inout T) -> Void) {
         lock.write({ block(&self.ward) })
     }
 
-    func write(block: (inout T) -> Void, completion: (() -> Void)) {
+    func write(_ block: @escaping (inout T) -> Void, completion: @escaping (() -> Void)) {
         lock.write({ block(&self.ward) }, completion: completion)
     }
 }
 
-extension Protector where T: _ArrayType {
+extension Protector where T: _ArrayProtocol {
 
-    func append(newElement: T.Generator.Element) {
-        write({ (inout ward: T) in
+    func append(_ newElement: T.Iterator.Element) {
+        write({ (ward: inout T) in
             ward.append(newElement)
         })
     }
 
-    func appendContentsOf<S: SequenceType where S.Generator.Element == T.Generator.Element>(newElements: S) {
-        write({ (inout ward: T) in
-            ward.appendContentsOf(newElements)
+    func appendContentsOf<S: Sequence>(_ newElements: S) where S.Iterator.Element == T.Iterator.Element {
+        write({ (ward: inout T) in
+            ward.append(contentsOf: newElements)
         })
     }
 }
 
-public func dispatch_sync(queue: dispatch_queue_t, _ block: () throws -> Void) rethrows {
-    var failure: ErrorType? = .None
+public func dispatch_sync_legacy(queue: DispatchQueue, _ block: @escaping () throws -> Void) rethrows {
+    var failure: Error? = .none
 
     let catcher = {
         do {
@@ -97,28 +91,24 @@ public func dispatch_sync(queue: dispatch_queue_t, _ block: () throws -> Void) r
         }
     }
 
-#if swift(>=2.3)
-    Dispatch.dispatch_sync(queue, catcher)
-#else
-    dispatch_sync(queue, catcher)
-#endif
+    queue.sync(execute: catcher)
 
     if let failure = failure {
         try { throw failure }()
     }
 }
 
-public func dispatch_sync<T>(queue: dispatch_queue_t, _ block: () throws -> T) rethrows -> T {
+public func dispatch_sync_legacy_with_result<T>(queue: DispatchQueue, _ block: @escaping () throws -> T) rethrows -> T {
     var result: T!
-    try dispatch_sync(queue) {
+    try dispatch_sync_legacy(queue: queue) {
         result = try block()
     }
     return result
 }
 
-internal func dispatch_main_sync<T>(block: () throws -> T) rethrows -> T {
+internal func dispatch_main_sync<T>(block: @escaping () throws -> T) rethrows -> T {
     guard Queue.isMainQueue else {
-        return try dispatch_sync(Queue.Main.queue, block)
+        return try dispatch_sync_legacy_with_result(queue: Queue.main.queue, block)
     }
     return try block()
 }

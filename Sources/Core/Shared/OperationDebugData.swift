@@ -16,17 +16,17 @@ protocol OperationDebuggable {
 
 }
 
-public class OperationDebugData {
+open class OperationDebugData {
 
-    private static let dumpDepthLimit: Int = 50
+    fileprivate static let dumpDepthLimit: Int = 50
 
     public typealias Logger = (String) -> Void
 
-    public let description: String
-    public let properties: [String: String]
-    public let conditions: [String]
-    public let dependencies: [OperationDebugData]
-    public let subOperations: [OperationDebugData]
+    open let description: String
+    open let properties: [String: String]
+    open let conditions: [String]
+    open let dependencies: [OperationDebugData]
+    open let subOperations: [OperationDebugData]
 
     public init(
         description: String,
@@ -44,7 +44,7 @@ public class OperationDebugData {
     /**
      Recursively dumps `OperationDebugData` via `print()`.
      */
-    public func dump() {
+    open func dump() {
         dump { (str: String) -> Void in
             print(str)
         }
@@ -53,18 +53,18 @@ public class OperationDebugData {
     /**
      Recursively dumps `OperationDebugData` to a `String`.
      */
-    public func dumpToString() -> String {
+    open func dumpToString() -> String {
         var debugLineArray: [String] = []
         dump { (line: String) in
             debugLineArray.append(line)
         }
-        return debugLineArray.joinWithSeparator("\n")
+        return debugLineArray.joined(separator: "\n")
     }
 
     /**
      Recursively dumps `OperationDebugData` via the passed in `Logger`.
      */
-    public func dump(logger: Logger) {
+    open func dump(_ logger: Logger) {
         OperationDebugData.dumpRecursiveHelper(data: self, depth: 0, logger: logger)
     }
 
@@ -76,7 +76,7 @@ public class OperationDebugData {
      visually represent the `Operation` hierarchy.
      - parameter logger: The `Logger` to use for output.
      */
-    private static func dumpRecursiveHelper(data data: OperationDebugData, depth: Int, logger: Logger) {
+    fileprivate static func dumpRecursiveHelper(data: OperationDebugData, depth: Int, logger: Logger) {
         guard depth <= dumpDepthLimit else {
             logger("*** Reached a max recursive dump depth limit of: \(dumpDepthLimit ) ***")
             return
@@ -89,7 +89,7 @@ public class OperationDebugData {
 
         let propertiesStr = data.properties.map { (key, value) in
             return "\(key): \(value)"
-            }.joinWithSeparator(", ")
+            }.joined(separator: ", ")
 
         // Main log line for the current `OperationDebugData` object
         logger("\(tab)- \(data.description) {\(propertiesStr)}")
@@ -108,7 +108,7 @@ public class OperationDebugData {
             for dependency in data.dependencies {
                 let dependencyPropertiesStr = dependency.properties.map { (key, value) in
                     return "\(key): \(value)"
-                    }.joinWithSeparator(", ")
+                    }.joined(separator: ", ")
                 logger("\(subSectionDataTab)\(dependency.description) {\(dependencyPropertiesStr)}")
             }
         }
@@ -129,8 +129,8 @@ public class OperationDebugData {
 
      - returns: A `String` of spaces representing the tab spacing for the passed `depth`.
      */
-    private static func tabSpacing(depth: Int) -> String {
-        return String(count: depth * 4, repeatedValue: (" " as Character))
+    fileprivate static func tabSpacing(_ depth: Int) -> String {
+        return String(repeating: String((" " as Character)), count: depth * 4)
     }
 
 }

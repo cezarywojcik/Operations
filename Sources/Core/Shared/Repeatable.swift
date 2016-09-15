@@ -34,20 +34,20 @@ public protocol Repeatable {
      the RepeatedOperation.
      - returns: a Bool, false will end the RepeatedOperation.
      */
-    func shouldRepeat(count: Int) -> Bool
+    func shouldRepeat(_ count: Int) -> Bool
 }
 
-public class RepeatableGenerator<G: GeneratorType where G.Element: Repeatable>: GeneratorType {
+open class RepeatableGenerator<G: IteratorProtocol>: IteratorProtocol where G.Element: Repeatable {
 
-    private var generator: G
-    private var count: Int = 0
-    private var current: G.Element?
+    fileprivate var generator: G
+    fileprivate var count: Int = 0
+    fileprivate var current: G.Element?
 
     public init(_ generator: G) {
         self.generator = generator
     }
 
-    public func next() -> G.Element? {
+    open func next() -> G.Element? {
         if let current = current {
             guard current.shouldRepeat(count) else {
                 return nil
@@ -69,8 +69,8 @@ extension RepeatedOperation where T: Repeatable {
      let operation = RepeatedOperation { MyRepeatableOperation() }
      ```
      */
-    public convenience init(maxCount max: Int? = .None, strategy: WaitStrategy = .Fixed(0.1), body: () -> T?) {
-        self.init(maxCount: max, strategy: strategy, generator: RepeatableGenerator(AnyGenerator(body: body)))
+    public convenience init(maxCount max: Int? = .none, strategy: WaitStrategy = .fixed(0.1), body: @escaping () -> T?) {
+        self.init(maxCount: max, strategy: strategy, generator: RepeatableGenerator(AnyIterator(body)))
     }
 }
 
@@ -84,10 +84,10 @@ extension RepeatedOperation where T: Repeatable {
  When conforming to Repeatable, the closure is executed, passing in the
  current repeat count.
  */
-public class RepeatableOperation<T: AdvancedOperation>: AdvancedOperation, OperationDidFinishObserver, Repeatable {
+open class RepeatableOperation<T: AdvancedOperation>: AdvancedOperation, OperationDidFinishObserver, Repeatable {
 
     let operation: T
-    let shouldRepeatBlock: Int -> Bool
+    let shouldRepeatBlock: (Int) -> Bool
 
     /**
      Initialize the RepeatableOperation with an operation and
@@ -96,7 +96,7 @@ public class RepeatableOperation<T: AdvancedOperation>: AdvancedOperation, Opera
      - parameter [unnamed] operation: the operation instance.
      - parameter shouldRepeat: a closure of type Int -> Bool
      */
-    public init(_ operation: T, shouldRepeat: Int -> Bool) {
+    public init(_ operation: T, shouldRepeat: @escaping (Int) -> Bool) {
         self.operation = operation
         self.shouldRepeatBlock = shouldRepeat
         super.init()
@@ -107,20 +107,20 @@ public class RepeatableOperation<T: AdvancedOperation>: AdvancedOperation, Opera
     }
 
     /// Override implementation of execute
-    public override func execute() {
-        if !cancelled {
+    open override func execute() {
+        if !isCancelled {
             operation.addObserver(self)
             produceOperation(operation)
         }
     }
 
     /// Implementation for Repeatable
-    public func shouldRepeat(count: Int) -> Bool {
+    open func shouldRepeat(_ count: Int) -> Bool {
         return shouldRepeatBlock(count)
     }
 
     /// Implementation for OperationDidFinishObserver
-    public func didFinishOperation(operation: AdvancedOperation, errors: [ErrorType]) {
+    open func didFinishOperation(_ operation: AdvancedOperation, errors: [Error]) {
         if self.operation == operation {
             finish(errors)
         }

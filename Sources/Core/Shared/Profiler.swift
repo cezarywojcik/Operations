@@ -38,7 +38,7 @@ public extension AdvancedOperation {
 }
 
 public protocol OperationProfilerReporter {
-    func finishedProfilingWithResult(result: ProfileResult)
+    func finishedProfilingWithResult(_ result: ProfileResult)
 }
 
 enum PendingValue<T: Equatable>: Equatable {
@@ -56,7 +56,7 @@ enum PendingValue<T: Equatable>: Equatable {
         if case .Value(let value) = self {
             return value
         }
-        return .None
+        return .none
     }
 }
 
@@ -73,22 +73,22 @@ func == <T: Equatable>(lhs: PendingValue<T>, rhs: PendingValue<T>) -> Bool {
 
 public struct ProfileResult {
     public let identity: OperationIdentity
-    public let created: NSTimeInterval
-    public let attached: NSTimeInterval
-    public let started: NSTimeInterval
-    public let cancelled: NSTimeInterval?
-    public let finished: NSTimeInterval?
+    public let created: TimeInterval
+    public let attached: TimeInterval
+    public let started: TimeInterval
+    public let cancelled: TimeInterval?
+    public let finished: TimeInterval?
     public let children: [ProfileResult]
 }
 
 struct PendingResult {
 
-    let created: NSTimeInterval
+    let created: TimeInterval
     let identity: PendingValue<OperationIdentity>
-    let attached: PendingValue<NSTimeInterval>
-    let started: PendingValue<NSTimeInterval>
-    let cancelled: PendingValue<NSTimeInterval>
-    let finished: PendingValue<NSTimeInterval>
+    let attached: PendingValue<TimeInterval>
+    let started: PendingValue<TimeInterval>
+    let cancelled: PendingValue<TimeInterval>
+    let finished: PendingValue<TimeInterval>
     let children: [ProfileResult]
 
     var pending: Bool {
@@ -98,39 +98,39 @@ struct PendingResult {
     func createResult() -> ProfileResult? {
         guard !pending, let
             identity = identity.value,
-            attached = attached.value,
-            started = started.value
-        else { return .None }
+            let attached = attached.value,
+            let started = started.value
+        else { return .none }
 
         return ProfileResult(identity: identity, created: created, attached: attached, started: started, cancelled: cancelled.value, finished: finished.value, children: children)
     }
 
-    func setIdentity(newIdentity: OperationIdentity) -> PendingResult {
+    func setIdentity(_ newIdentity: OperationIdentity) -> PendingResult {
         guard identity.pending else { return self }
         return PendingResult(created: created, identity: .Value(newIdentity), attached: attached, started: started, cancelled: cancelled, finished: finished, children: children)
     }
 
-    func attach(now: NSTimeInterval = CFAbsoluteTimeGetCurrent() as NSTimeInterval) -> PendingResult {
+    func attach(_ now: TimeInterval = CFAbsoluteTimeGetCurrent() as TimeInterval) -> PendingResult {
         guard attached.pending else { return self }
         return PendingResult(created: created, identity: identity, attached: .Value(now - created), started: started, cancelled: cancelled, finished: finished, children: children)
     }
 
-    func start(now: NSTimeInterval = CFAbsoluteTimeGetCurrent() as NSTimeInterval) -> PendingResult {
+    func start(_ now: TimeInterval = CFAbsoluteTimeGetCurrent() as TimeInterval) -> PendingResult {
         guard started.pending else { return self }
         return PendingResult(created: created, identity: identity, attached: attached, started: .Value(now - created), cancelled: cancelled, finished: finished, children: children)
     }
 
-    func cancel(now: NSTimeInterval = CFAbsoluteTimeGetCurrent() as NSTimeInterval) -> PendingResult {
+    func cancel(_ now: TimeInterval = CFAbsoluteTimeGetCurrent() as TimeInterval) -> PendingResult {
         guard cancelled.pending else { return self }
         return PendingResult(created: created, identity: identity, attached: attached, started: started, cancelled: .Value(now - created), finished: finished, children: children)
     }
 
-    func finish(now: NSTimeInterval = CFAbsoluteTimeGetCurrent() as NSTimeInterval) -> PendingResult {
+    func finish(_ now: TimeInterval = CFAbsoluteTimeGetCurrent() as TimeInterval) -> PendingResult {
         guard finished.pending else { return self }
         return PendingResult(created: created, identity: identity, attached: attached, started: started, cancelled: cancelled, finished: .Value(now - created), children: children)
     }
 
-    func addChild(child: ProfileResult) -> PendingResult {
+    func addChild(_ child: ProfileResult) -> PendingResult {
         var newChildren = children
         newChildren.append(child)
         return PendingResult(created: created, identity: identity, attached: attached, started: started, cancelled: cancelled, finished: finished, children: newChildren)
@@ -140,15 +140,15 @@ struct PendingResult {
 public final class OperationProfiler: Identifiable, Equatable {
 
     enum Reporter {
-        case Parent(OperationProfiler)
-        case Reporters([OperationProfilerReporter])
+        case parent(OperationProfiler)
+        case reporters([OperationProfilerReporter])
     }
 
-    public let identifier = NSUUID().UUIDString
-    let queue = Queue.Utility.serial("me.danthorpe.Operations.Profiler")
+    public let identifier = UUID().uuidString
+    let queue = Queue.utility.serial("me.danthorpe.Operations.Profiler")
     let reporter: Reporter
 
-    var result = PendingResult(created: CFAbsoluteTimeGetCurrent() as NSTimeInterval, identity: .Pending, attached: .Pending, started: .Pending, cancelled: .Pending, finished: .Pending, children: [])
+    var result = PendingResult(created: CFAbsoluteTimeGetCurrent() as TimeInterval, identity: .Pending, attached: .Pending, started: .Pending, cancelled: .Pending, finished: .Pending, children: [])
     var children: [OperationIdentity] = []
     var finishedOrCancelled = false
 
@@ -157,69 +157,44 @@ public final class OperationProfiler: Identifiable, Equatable {
     }
 
     public convenience init(reporters: [OperationProfilerReporter]) {
-        self.init(reporter: .Reporters(reporters))
+        self.init(reporter: .reporters(reporters))
     }
 
     convenience init(parent: OperationProfiler) {
-        self.init(reporter: .Parent(parent))
+        self.init(reporter: .parent(parent))
     }
 
     init(reporter: Reporter) {
         self.reporter = reporter
     }
 
-    func addMetricNow(now: NSTimeInterval = CFAbsoluteTimeGetCurrent() as NSTimeInterval, forEvent event: OperationEvent) {
-#if swift(>=2.3)
-        Dispatch.dispatch_sync(queue) { [unowned self] in
+    func addMetricNow(_ now: TimeInterval = CFAbsoluteTimeGetCurrent() as TimeInterval, forEvent event: OperationEvent) {
+        dispatch_sync_legacy(queue: queue) { [unowned self] in
             switch event {
-            case .Attached:
+            case .attached:
                 self.result = self.result.attach(now)
-            case .Started:
+            case .started:
                 self.result = self.result.start(now)
-            case .Cancelled:
+            case .cancelled:
                 self.result = self.result.cancel(now)
                 self.finishedOrCancelled = true
-            case .Finished:
+            case .finished:
                 self.result = self.result.finish(now)
                 self.finishedOrCancelled = true
             default:
                 break
             }
         }
-#else
-        dispatch_sync(queue) { [unowned self] in
-            switch event {
-            case .Attached:
-                self.result = self.result.attach(now)
-            case .Started:
-                self.result = self.result.start(now)
-            case .Cancelled:
-                self.result = self.result.cancel(now)
-                self.finishedOrCancelled = true
-            case .Finished:
-                self.result = self.result.finish(now)
-                self.finishedOrCancelled = true
-            default:
-                break
-            }
-        }
-#endif
         finish()
     }
 
-    func addChildOperation(operation: NSOperation, now: NSTimeInterval = CFAbsoluteTimeGetCurrent() as NSTimeInterval) {
+    func addChildOperation(_ operation: Operation, now: TimeInterval = CFAbsoluteTimeGetCurrent() as TimeInterval) {
         if let operation = operation as? AdvancedOperation {
             let profiler = OperationProfiler(parent: self)
             operation.addObserver(profiler)
-#if swift(>=2.3)
-            Dispatch.dispatch_sync(queue) { [unowned self] in
+                dispatch_sync_legacy(queue: queue) { [unowned self] in
                 self.children.append(operation.identity)
             }
-#else
-            dispatch_sync(queue) { [unowned self] in
-                self.children.append(operation.identity)
-            }
-#endif
         }
     }
 
@@ -231,11 +206,11 @@ public final class OperationProfiler: Identifiable, Equatable {
 
 extension OperationProfiler.Reporter: OperationProfilerReporter {
 
-    func finishedProfilingWithResult(result: ProfileResult) {
+    func finishedProfilingWithResult(_ result: ProfileResult) {
         switch self {
-        case .Parent(let parent):
+        case .parent(let parent):
             parent.finishedProfilingWithResult(result)
-        case .Reporters(let reporters):
+        case .reporters(let reporters):
             reporters.forEach { $0.finishedProfilingWithResult(result)  }
         }
     }
@@ -243,73 +218,58 @@ extension OperationProfiler.Reporter: OperationProfilerReporter {
 
 extension OperationProfiler: OperationProfilerReporter {
 
-    public func finishedProfilingWithResult(result: ProfileResult) {
-#if swift(>=2.3)
-        Dispatch.dispatch_sync(queue) { [unowned self] in
-            if let index = self.children.indexOf(result.identity) {
+    public func finishedProfilingWithResult(_ result: ProfileResult) {
+        dispatch_sync_legacy(queue: queue) { [unowned self] in
+            if let index = self.children.index(of: result.identity) {
                 self.result = self.result.addChild(result)
-                self.children.removeAtIndex(index)
+                self.children.remove(at: index)
             }
         }
-#else
-        dispatch_sync(queue) { [unowned self] in
-            if let index = self.children.indexOf(result.identity) {
-                self.result = self.result.addChild(result)
-                self.children.removeAtIndex(index)
-            }
-        }
-#endif
         finish()
     }
 }
 
 extension OperationProfiler: OperationObserverType {
 
-    public func didAttachToOperation(operation: AdvancedOperation) {
-#if swift(>=2.3)
-        Dispatch.dispatch_sync(queue) { [unowned self] in
+    public func didAttachToOperation(_ operation: AdvancedOperation) {
+        dispatch_sync_legacy(queue: queue) { [unowned self] in
             self.result = self.result.setIdentity(operation.identity)
         }
-#else
-        dispatch_sync(queue) { [unowned self] in
-            self.result = self.result.setIdentity(operation.identity)
-        }
-#endif
-        addMetricNow(forEvent: .Attached)
+        addMetricNow(forEvent: .attached)
     }
 }
 
 extension OperationProfiler: OperationWillExecuteObserver {
 
-    public func willExecuteOperation(operation: AdvancedOperation) {
-        addMetricNow(forEvent: .Started)
+    public func willExecuteOperation(_ operation: AdvancedOperation) {
+        addMetricNow(forEvent: .started)
     }
 }
 
 extension OperationProfiler: OperationDidCancelObserver {
 
-    public func didCancelOperation(operation: AdvancedOperation) {
-        addMetricNow(forEvent: .Cancelled)
+    public func didCancelOperation(_ operation: AdvancedOperation) {
+        addMetricNow(forEvent: .cancelled)
     }
 }
 
 extension OperationProfiler: OperationDidFinishObserver {
 
-    public func didFinishOperation(operation: AdvancedOperation, errors: [ErrorType]) {
-        addMetricNow(forEvent: .Finished)
+    public func didFinishOperation(_ operation: AdvancedOperation, errors: [Error]) {
+        addMetricNow(forEvent: .finished)
     }
 }
 
 extension OperationProfiler: OperationDidProduceOperationObserver {
 
-    public func operation(operation: AdvancedOperation, didProduceOperation newOperation: NSOperation) {
+    public func operation(_ operation: AdvancedOperation, didProduceOperation newOperation: Operation) {
         addChildOperation(newOperation)
     }
 }
 
 extension OperationProfiler: GroupOperationWillAddChildObserver {
 
-    public func groupOperation(group: GroupOperation, willAddChildOperation child: NSOperation) {
+    public func groupOperation(_ group: GroupOperation, willAddChildOperation child: Operation) {
         addChildOperation(child)
     }
 }
@@ -321,19 +281,19 @@ struct PrintableProfileResult: CustomStringConvertible {
     let spacing: Int
     let result: ProfileResult
 
-    func addRowWithInterval(interval: NSTimeInterval, text: String) -> String {
+    func addRowWithInterval(_ interval: TimeInterval, text: String) -> String {
         return "\(createIndentation())+\(interval)\(createSpacing())\(text)\n"
     }
 
-    func addRowWithInterval(interval: NSTimeInterval, forEvent event: OperationEvent) -> String {
+    func addRowWithInterval(_ interval: TimeInterval, forEvent event: OperationEvent) -> String {
         return addRowWithInterval(interval, text: event.description)
     }
 
     var description: String {
         get {
             var output = ""
-            output += addRowWithInterval(result.attached, forEvent: .Attached)
-            output += addRowWithInterval(result.started, forEvent: .Started)
+            output += addRowWithInterval(result.attached, forEvent: .attached)
+            output += addRowWithInterval(result.started, forEvent: .started)
 
             for child in result.children {
                 output += "\(createIndentation())-> Spawned \(child.identity) with profile results\n"
@@ -341,11 +301,11 @@ struct PrintableProfileResult: CustomStringConvertible {
             }
 
             if let cancelled = result.cancelled {
-                output += addRowWithInterval(cancelled, forEvent: .Cancelled)
+                output += addRowWithInterval(cancelled, forEvent: .cancelled)
             }
 
             if let finished = result.finished {
-                output += addRowWithInterval(finished, forEvent: .Finished)
+                output += addRowWithInterval(finished, forEvent: .finished)
             }
 
             return output
@@ -359,21 +319,21 @@ struct PrintableProfileResult: CustomStringConvertible {
     }
 
     func createIndentation() -> String {
-        return String(count: indentation, repeatedValue: " " as UnicodeScalar)
+        return String(repeating: " ", count: indentation)
     }
 
     func createSpacing() -> String {
-        return String(count: spacing, repeatedValue: " " as UnicodeScalar)
+        return String(repeating: " ", count: spacing)
     }
 }
 
-public class _OperationProfileLogger<Manager: LogManagerType>: _Logger<Manager>, OperationProfilerReporter {
+open class _OperationProfileLogger<Manager: LogManagerType>: _Logger<Manager>, OperationProfilerReporter {
 
-    public required init(severity: LogSeverity = Manager.severity, enabled: Bool = Manager.enabled, logger: LoggerBlockType = Manager.logger) {
+    public required init(severity: LogSeverity = Manager.severity, enabled: Bool = Manager.enabled, logger: @escaping LoggerBlockType = Manager.logger) {
         super.init(severity: severity, enabled: enabled, logger: logger)
     }
 
-    public func finishedProfilingWithResult(result: ProfileResult) {
+    open func finishedProfilingWithResult(_ result: ProfileResult) {
         operationName = result.identity.description
         info("finished profiling with results:\n\(PrintableProfileResult(result: result))")
     }

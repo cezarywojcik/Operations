@@ -87,14 +87,15 @@ extension InjectionOperationType where Self: AdvancedOperation {
      operation, and an array of `ErrorType`, and returns Void.
      - returns: `self` - so that injections can be chained together.
     */
-    public func injectResultFromDependency<T where T: AdvancedOperation>(dep: T, block: (operation: Self, dependency: T, errors: [ErrorType]) -> Void) -> Self {
+    @discardableResult
+    public func injectResultFromDependency<T>(_ dep: T, block: @escaping (_ operation: Self, _ dependency: T, _ errors: [Error]) -> Void) -> Self where T: AdvancedOperation {
         dep.addObserver(WillFinishObserver { [weak self] op, errors in
-            if let strongSelf = self, dep = op as? T {
-                block(operation: strongSelf, dependency: dep, errors: errors)
+            if let strongSelf = self, let dep = op as? T {
+                block(strongSelf, dep, errors)
             }
         })
         dep.addObserver(DidCancelObserver { [weak self] op in
-            if let strongSelf = self, _ = op as? T {
+            if let strongSelf = self, let _ = op as? T {
                 (strongSelf as AdvancedOperation).cancel()
             }
         })
@@ -137,9 +138,9 @@ public protocol AutomaticInjectionOperationType: InjectionOperationType {
  The only case indicates this, and composes the errors the
  dependency finished with.
 */
-public enum AutomaticInjectionError: ErrorType {
-    case DependencyFinishedWithErrors([ErrorType])
-    case RequirementNotSatisfied
+public enum AutomaticInjectionError: Error {
+    case dependencyFinishedWithErrors([Error])
+    case requirementNotSatisfied
 }
 
 extension AutomaticInjectionOperationType where Self: AdvancedOperation {
@@ -175,13 +176,13 @@ extension AutomaticInjectionOperationType where Self: AdvancedOperation {
      - parameter dep: an operation of type T
      - returns: the receiver
     */
-    public func injectResultFromDependency<T where T: AdvancedOperation, T: ResultOperationType, T.Result == Requirement>(dep: T) -> Self {
+    public func injectResultFromDependency<T>(_ dep: T) -> Self where T: AdvancedOperation, T: ResultOperationType, T.Result == Requirement {
         return injectResultFromDependency(dep) { [weak self] operation, dependency, errors in
             if errors.isEmpty {
                 self?.requirement = dependency.result
             }
             else {
-                self?.cancelWithError(AutomaticInjectionError.DependencyFinishedWithErrors(errors))
+                self?.cancelWithError(AutomaticInjectionError.dependencyFinishedWithErrors(errors))
             }
         }
     }
@@ -202,7 +203,7 @@ extension AutomaticInjectionOperationType where Self: AdvancedOperation {
      - parameter dep: an operation of type T
      - returns: the receiver
     */
-    public func requireResultFromDependency<T where T: AdvancedOperation, T: ResultOperationType, T.Result == Requirement>(dep: T) -> Self {
+    public func requireResultFromDependency<T>(_ dep: T) -> Self where T: AdvancedOperation, T: ResultOperationType, T.Result == Requirement {
         if conditions.filter({ return $0 is NoFailedDependenciesCondition }).count < 1 {
             addCondition(NoFailedDependenciesCondition())
         }
@@ -223,7 +224,7 @@ public protocol Executor: ResultOperationType, AutomaticInjectionOperationType {
      
      - parameter finish: a closure which receives an ErrorType?
     */
-    func execute(finish: ErrorType? -> Void)
+    func execute(_ finish: (Error?) -> Void)
 
     /// Will be called to signal that the _work_ should be cancelled.
     func cancel()

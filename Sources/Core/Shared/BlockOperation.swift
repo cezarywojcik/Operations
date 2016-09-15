@@ -15,12 +15,12 @@ call this block to correctly finish the operation. It can be called
 with a nil error argument to finish with no errors. Or an `ErrorType`
 argument to finish with the supplied error.
 */
-public class BlockOperation: AdvancedOperation {
+open class BlockOperation: AdvancedOperation {
 
-    public typealias ContinuationBlockType = (error: ErrorType?) -> Void
-    public typealias BlockType = (continueWithError: ContinuationBlockType) -> Void
+    public typealias ContinuationBlockType = (_ error: Error?) -> Void
+    public typealias BlockType = (_ continueWithError: @escaping ContinuationBlockType) -> Void
 
-    private let block: BlockType
+    fileprivate let block: BlockType
 
     /**
     Designated initializer.
@@ -28,7 +28,7 @@ public class BlockOperation: AdvancedOperation {
     - parameter block: The closure to run when the operation executes.
     If this block is nil, the operation will immediately finish.
     */
-    public init(block: BlockType = { continuation in continuation(error: nil) }) {
+    public init(block: @escaping BlockType = { continuation in continuation(nil) }) {
         self.block = block
         super.init()
         name = "Block Operation"
@@ -39,11 +39,11 @@ public class BlockOperation: AdvancedOperation {
 
     - parameter block: a dispatch block which is run on the main thread.
     */
-    public convenience init(mainQueueBlock: dispatch_block_t) {
+    public convenience init(mainQueueBlock: @escaping ()->()) {
         self.init(block: { continuation in
-            dispatch_async(Queue.Main.queue) {
+            Queue.main.queue.async {
                 mainQueueBlock()
-                continuation(error: nil)
+                continuation(nil)
             }
         })
     }
@@ -57,8 +57,8 @@ public class BlockOperation: AdvancedOperation {
     the operation. Errors can be propagated from the block to the operation by passing
     them to this continuation block.
     */
-    public override func execute() {
-        if !cancelled {
+    open override func execute() {
+        if !isCancelled {
             block { error in self.finish(error) }
         }
     }
