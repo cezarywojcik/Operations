@@ -30,12 +30,12 @@ For example
     }
     queue.addOperation(alert)
 */
-public class AlertOperation<From: PresentingViewController>: AdvancedOperation {
+open class AlertOperation<From: PresentingViewController>: AdvancedOperation {
 
-    private var uiOperation: UIOperation<UIAlertController, From>
+    fileprivate var uiOperation: UIOperation<UIAlertController, From>
 
     /// Access the presented `UIAlertController`.
-    public var alert: UIAlertController {
+    open var alert: UIAlertController {
         return uiOperation.controller
     }
 
@@ -46,9 +46,9 @@ public class AlertOperation<From: PresentingViewController>: AdvancedOperation {
     - parameter from: a generic type conforming to `PresentingViewController`,
     such as an `UIViewController`
     */
-    public init(presentAlertFrom from: From, preferredStyle: UIAlertControllerStyle = .Alert) {
-        let controller = UIAlertController(title: .None, message: .None, preferredStyle: preferredStyle)
-        uiOperation = UIOperation(controller: controller, displayControllerFrom: .Present(from))
+    public init(presentAlertFrom from: From, preferredStyle: UIAlertControllerStyle = .alert) {
+        let controller = UIAlertController(title: .none, message: .none, preferredStyle: preferredStyle)
+        uiOperation = UIOperation(controller: controller, displayControllerFrom: .present(from))
         super.init()
         name = "Alert<\(From.self)>"
         addCondition(AlertPresentation())
@@ -65,7 +65,8 @@ public class AlertOperation<From: PresentingViewController>: AdvancedOperation {
      - parameter style: a `UIAlertActionStyle` which defaults to `.Default`.
      - parameter handler: a block which receives the operation, and returns Void.
      */
-    public func addActionWithTitle(title: String, style: UIAlertActionStyle = .Default, handler: AlertOperation -> Void = { _ in }) -> UIAlertAction {
+    @discardableResult
+    open func addActionWithTitle(_ title: String, style: UIAlertActionStyle = .default, handler: @escaping (AlertOperation) -> Void = { _ in }) -> UIAlertAction {
         let action = UIAlertAction(title: title, style: style) { [weak self] _ in
             if let weakSelf = self {
                 handler(weakSelf)
@@ -81,7 +82,7 @@ public class AlertOperation<From: PresentingViewController>: AdvancedOperation {
 
      The actions are in the order in which you added them to the alert controller. This order also corresponds to the order in which they are displayed in the alert or action sheet. The second action in the array is displayed below the first, the third is displayed below the second, and so on.
      */
-    public var actions: [UIAlertAction] {
+    open var actions: [UIAlertAction] {
         get {
             return alert.actions
         }
@@ -97,7 +98,7 @@ public class AlertOperation<From: PresentingViewController>: AdvancedOperation {
      The default value of this property is `nil`.
      */
     @available (iOS 9.0, *)
-    public var preferredAction: UIAlertAction? {
+    open var preferredAction: UIAlertAction? {
         get {
             return alert.preferredAction
         }
@@ -116,8 +117,8 @@ public class AlertOperation<From: PresentingViewController>: AdvancedOperation {
 
      - parameter configurationHandler: A block for configuring the text field prior to displaying the alert. This block has no return value and takes a single parameter corresponding to the text field object. Use that parameter to change the text field properties.
      */
-    public func addTextFieldWithConfigurationHandler(configurationHandler: ((UITextField) -> Void)?) {
-        alert.addTextFieldWithConfigurationHandler(configurationHandler)
+    open func addTextFieldWithConfigurationHandler(_ configurationHandler: ((UITextField) -> Void)?) {
+        alert.addTextField(configurationHandler: configurationHandler)
     }
 
     /**
@@ -125,7 +126,7 @@ public class AlertOperation<From: PresentingViewController>: AdvancedOperation {
 
      Use this property to access the text fields displayed by the alert. The text fields are in the order in which you added them to the alert controller. This order also corresponds to the order in which they are displayed in the alert.
      */
-    public var textFields: [UITextField]? {
+    open var textFields: [UITextField]? {
         get {
             return alert.textFields
         }
@@ -136,7 +137,7 @@ public class AlertOperation<From: PresentingViewController>: AdvancedOperation {
 
      The title string is displayed prominently in the alert or action sheet. You should use this string to get the user’s attention and communicate the reason for displaying the alert.
      */
-    public var title: String? {
+    open var title: String? {
         get {
             return alert.title
         }
@@ -151,7 +152,7 @@ public class AlertOperation<From: PresentingViewController>: AdvancedOperation {
 
      The message string is displayed below the title string and is less prominent. Use this string to provide additional context about the reason for the alert or about the actions that the user might take.
      */
-    public var message: String? {
+    open var message: String? {
         get {
             return alert.message
         }
@@ -165,7 +166,7 @@ public class AlertOperation<From: PresentingViewController>: AdvancedOperation {
 
      The value of this property is set to the value you specified in the [alertControllerWithTitle:message:preferredStyle:](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UIAlertController_class/#//apple_ref/occ/clm/UIAlertController/alertControllerWithTitle:message:preferredStyle:) method. This value determines how the alert is displayed onscreen.
      */
-    public var preferredStyle: UIAlertControllerStyle {
+    open var preferredStyle: UIAlertControllerStyle {
         get {
             return alert.preferredStyle
         }
@@ -176,7 +177,7 @@ public class AlertOperation<From: PresentingViewController>: AdvancedOperation {
     if the alert has no actions. Will then produce the UI operation which presents
     the alert controller.
     */
-    public override func execute() {
+    open override func execute() {
         if alert.actions.isEmpty {
             addActionWithTitle(NSLocalizedString("Okay", comment: "Okay"))
         }

@@ -8,9 +8,9 @@
 
 import Foundation
 
-public class ComposedOperation<T: NSOperation>: GroupOperation {
+open class ComposedOperation<T: Operation>: GroupOperation {
 
-    public var operation: T
+    open var operation: T
 
     public convenience init(_ composed: T) {
         self.init(operation: composed)
@@ -23,7 +23,7 @@ public class ComposedOperation<T: NSOperation>: GroupOperation {
         addObserver(WillCancelObserver { [unowned self] operation, errors in
             guard operation === self else { return }
             if !errors.isEmpty, let op =  self.operation as? AdvancedOperation {
-                op.cancelWithError(OperationError.ParentOperationCancelledWithErrors(errors))
+                op.cancelWithError(OperationError.parentOperationCancelledWithErrors(errors))
             }
             else {
                 self.operation.cancel()

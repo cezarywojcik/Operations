@@ -13,7 +13,7 @@ A Condition which will be satisfied if the block returns true. The
  block may throw an error, or return false, both of which are
  intepretated as a condition failure.
 */
-public class BlockCondition: Condition {
+open class BlockCondition: Condition {
 
     /// The block type which returns a Bool.
     public typealias ConditionBlockType = () throws -> Bool
@@ -39,20 +39,20 @@ public class BlockCondition: Condition {
 
     - parameter block: a `ConditionBlockType`.
     */
-    public init(name: String = "Block Condition", mutuallyExclusive: Bool = false, block: ConditionBlockType) {
+    public init(name: String = "Block Condition", mutuallyExclusive: Bool = false, block: @escaping ConditionBlockType) {
         self.block = block
         super.init()
         self.mutuallyExclusive = mutuallyExclusive
         self.name = name
     }
 
-    public override func evaluate(operation: AdvancedOperation, completion: CompletionBlockType) {
+    open override func evaluate(_ operation: AdvancedOperation, completion: @escaping CompletionBlockType) {
         do {
             let result = try block()
-            completion(result ? .Satisfied : .Failed(Error.BlockConditionFailed))
+            completion(result ? .satisfied : .failed(Error.blockConditionFailed))
         }
         catch {
-            completion(.Failed(error))
+            completion(.failed(error))
         }
     }
 }

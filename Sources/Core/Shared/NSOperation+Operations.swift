@@ -8,7 +8,7 @@
 
 import Foundation
 
-extension NSOperation {
+extension Operation {
 
     /**
      Special case handling for fetching `OperationDebugData` on an `NSOperation`. Ideally this extension
@@ -22,11 +22,11 @@ extension NSOperation {
         return OperationDebugData(
             description: "NSOperation: \(self)",
             properties: [
-                "cancelled": String(cancelled),
-                "ready": String(ready),
-                "executing": String(executing),
-                "finished": String(finished),
-                "QOS": String(qualityOfService)
+                "cancelled": String(isCancelled),
+                "ready": String(isReady),
+                "executing": String(isExecuting),
+                "finished": String(isFinished),
+                "QOS": String(describing: qualityOfService)
             ],
             conditions: [],
             dependencies: self.dependencies.map { ($0 as? OperationDebuggable)?.debugData() ?? $0.debugDataNSOperation()})

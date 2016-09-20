@@ -13,16 +13,16 @@ A condition that specificed that every dependency of the
 operation must succeed. If any dependency fails/cancels,
 the target operation will be fail.
 */
-public class NoFailedDependenciesCondition: Condition {
+open class NoFailedDependenciesCondition: Condition {
 
     /// The `ErrorType` returned to indicate the condition failed.
-    public enum Error: ErrorType, Equatable {
+    public enum ErrorType: Error, Equatable {
 
         /// When some dependencies were cancelled
-        case CancelledDependencies
+        case cancelledDependencies
 
         /// When some dependencies failed with errors
-        case FailedDependencies
+        case failedDependencies
     }
 
     /// Initializer which takes no parameters.
@@ -44,11 +44,11 @@ public class NoFailedDependenciesCondition: Condition {
 
     - parameter operation: the `Operation` which the condition is attached to.
     - parameter completion: the completion block which receives a `OperationConditionResult`.
-    */
-    public override func evaluate(operation: AdvancedOperation, completion: CompletionBlockType) {
+     */
+    open override func evaluate(_ operation: AdvancedOperation, completion: @escaping CompletionBlockType) {
         let dependencies = operation.dependencies
 
-        let cancelled = dependencies.filter { $0.cancelled }
+        let cancelled = dependencies.filter { $0.isCancelled }
         let failures = dependencies.filter {
             if let operation = $0 as? AdvancedOperation {
                 return operation.failed
@@ -57,21 +57,21 @@ public class NoFailedDependenciesCondition: Condition {
         }
 
         if !cancelled.isEmpty {
-            completion(.Failed(Error.CancelledDependencies))
+            completion(.failed(ErrorType.cancelledDependencies))
         }
         else if !failures.isEmpty {
-            completion(.Failed(Error.FailedDependencies))
+            completion(.failed(ErrorType.failedDependencies))
         }
         else {
-            completion(.Satisfied)
+            completion(.satisfied)
         }
     }
 }
 
 /// Equatable conformance for `NoFailedDependenciesCondition.Error`
-public func == (lhs: NoFailedDependenciesCondition.Error, rhs: NoFailedDependenciesCondition.Error) -> Bool {
+public func == (lhs: NoFailedDependenciesCondition.ErrorType, rhs: NoFailedDependenciesCondition.ErrorType) -> Bool {
     switch (lhs, rhs) {
-    case (.CancelledDependencies, .CancelledDependencies), (.FailedDependencies, .FailedDependencies):
+    case (.cancelledDependencies, .cancelledDependencies), (.failedDependencies, .failedDependencies):
         return true
     default:
         return false

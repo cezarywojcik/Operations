@@ -22,7 +22,7 @@ public protocol OperationQueueDelegate: class {
     - paramter queue: the `OperationQueue`.
     - paramter operation: the `NSOperation` instance about to be added.
     */
-    func operationQueue(queue: AdvancedOperationQueue, willAddOperation operation: NSOperation)
+    func operationQueue(_ queue: AdvancedOperationQueue, willAddOperation operation: Operation)
 
     /**
     An operation has finished on the queue.
@@ -31,7 +31,7 @@ public protocol OperationQueueDelegate: class {
     - parameter operation: the `NSOperation` instance which finished.
     - parameter errors: an array of `ErrorType`s.
     */
-    func operationQueue(queue: AdvancedOperationQueue, willFinishOperation operation: NSOperation, withErrors errors: [ErrorType])
+    func operationQueue(_ queue: AdvancedOperationQueue, willFinishOperation operation: Operation, withErrors errors: [Error])
 
     /**
      An operation has finished on the queue.
@@ -40,7 +40,7 @@ public protocol OperationQueueDelegate: class {
      - parameter operation: the `NSOperation` instance which finished.
      - parameter errors: an array of `ErrorType`s.
      */
-    func operationQueue(queue: AdvancedOperationQueue, didFinishOperation operation: NSOperation, withErrors errors: [ErrorType])
+    func operationQueue(_ queue: AdvancedOperationQueue, didFinishOperation operation: Operation, withErrors errors: [Error])
 
     /**
      The operation queue will add a new operation via produceOperation().
@@ -50,14 +50,14 @@ public protocol OperationQueueDelegate: class {
      - paramter queue: the `OperationQueue`.
      - paramter operation: the `NSOperation` instance about to be added.
      */
-    func operationQueue(queue: AdvancedOperationQueue, willProduceOperation operation: NSOperation)
+    func operationQueue(_ queue: AdvancedOperationQueue, willProduceOperation operation: Operation)
 }
 
 /**
 An `NSOperationQueue` subclass which supports the features of Operations. All functionality
 is achieved via the overridden functionality of `addOperation`.
 */
-public class AdvancedOperationQueue: NSOperationQueue {
+open class AdvancedOperationQueue: OperationQueue {
 
     #if swift(>=3.0)
         // (SR-192 is fixed in Swift 3)
@@ -79,14 +79,14 @@ public class AdvancedOperationQueue: NSOperationQueue {
     - parameter delegate: a weak `OperationQueueDelegate?`
     */
     #if swift(>=3.0)
-    public weak var delegate: OperationQueueDelegate? = .None
+    public weak var delegate: OperationQueueDelegate? = .none
     #else
     // Swift < 3 FIX:
     // (SR-192): Weak properties are not thread safe when reading
     // https://bugs.swift.org/browse/SR-192
     //
     // Surround access of delegate with a lock to avoid the issue.
-    public weak var delegate: OperationQueueDelegate? {
+    open weak var delegate: OperationQueueDelegate? {
         get {
             return delegateLock.withCriticalScope { _delegate }
         }
@@ -96,8 +96,8 @@ public class AdvancedOperationQueue: NSOperationQueue {
             }
         }
     }
-    private weak var _delegate: OperationQueueDelegate? = .None
-    private let delegateLock = NSLock()
+    fileprivate weak var _delegate: OperationQueueDelegate? = .none
+    fileprivate let delegateLock = NSLock()
     #endif
 
     /**
@@ -107,7 +107,7 @@ public class AdvancedOperationQueue: NSOperationQueue {
     - parameter op: an `NSOperation` instance.
     */
     // swiftlint:disable function_body_length
-    public override func addOperation(operation: NSOperation) {
+    open override func addOperation(_ operation: Operation) {
         if let operation = operation as? AdvancedOperation {
 
             /// Add an observer so that any produced operations are added to the queue
@@ -138,7 +138,7 @@ public class AdvancedOperationQueue: NSOperationQueue {
                 /// Check for mutual exclusion conditions
                 let manager = ExclusivityManager.sharedInstance
                 let mutuallyExclusiveConditions = operation.conditions.filter { $0.mutuallyExclusive }
-                var previousMutuallyExclusiveOperations = Set<NSOperation>()
+                var previousMutuallyExclusiveOperations = Set<Operation>()
                 for condition in mutuallyExclusiveConditions {
                     let category = "\(condition.category)"
                     if let previous = manager.addOperation(operation, category: category) {
@@ -184,7 +184,7 @@ public class AdvancedOperationQueue: NSOperationQueue {
         }
         else {
             operation.addCompletionBlock { [weak self, weak operation] in
-                if let queue = self, op = operation {
+                if let queue = self, let op = operation {
                     queue.delegate?.operationQueue(queue, didFinishOperation: op, withErrors: [])
                 }
             }
@@ -202,7 +202,7 @@ public class AdvancedOperationQueue: NSOperationQueue {
     - parameter ops: an array of `NSOperation` instances.
     - parameter wait: a Bool flag which is ignored.
     */
-    public override func addOperations(ops: [NSOperation], waitUntilFinished wait: Bool) {
+    open override func addOperations(_ ops: [Operation], waitUntilFinished wait: Bool) {
         ops.forEach(addOperation)
     }
 
@@ -211,7 +211,7 @@ public class AdvancedOperationQueue: NSOperationQueue {
 
      - returns: An `OperationDebugData` object containing debug data for the current `OperationQueue`.
      */
-    public func debugData() -> OperationDebugData {
+    open func debugData() -> OperationDebugData {
         let queueDebugData = operations.map { ($0 as? OperationDebuggable)?.debugData() ?? $0.debugDataNSOperation() }
         return OperationDebugData(
             description: "Queue",
@@ -220,16 +220,26 @@ public class AdvancedOperationQueue: NSOperationQueue {
             ],
             subOperations: queueDebugData)
     }
+
+    fileprivate static let sharedMainQueue = MainQueue()
+
+    /**
+     Override NSOperationQueue's mainQueue() to return the main queue as an OperationQueue
+
+     - returns: The main queue
+     */
+    open override class var main: AdvancedOperationQueue {
+        return sharedMainQueue
+    }
 }
 
-
-public extension NSOperationQueue {
+public extension OperationQueue {
 
     /**
      Add operations to the queue as an array
      - parameters ops: a array of `NSOperation` instances.
      */
-    func addOperations<S where S: SequenceType, S.Generator.Element: NSOperation>(ops: S) {
+    func addOperations<S>(_ ops: S) where S: Sequence, S.Iterator.Element: Operation {
         addOperations(Array(ops), waitUntilFinished: false)
     }
 
@@ -237,23 +247,8 @@ public extension NSOperationQueue {
      Add operations to the queue as a variadic parameter
      - parameters ops: a variadic array of `NSOperation` instances.
     */
-    func addOperations(ops: NSOperation...) {
+    func addOperations(_ ops: Operation...) {
         addOperations(ops)
-    }
-}
-
-
-public extension AdvancedOperationQueue {
-
-    private static let sharedMainQueue = MainQueue()
-
-    /**
-     Override NSOperationQueue's mainQueue() to return the main queue as an OperationQueue
-
-     - returns: The main queue
-     */
-    public override class func mainQueue() -> AdvancedOperationQueue {
-        return sharedMainQueue
     }
 }
 
@@ -261,7 +256,7 @@ public extension AdvancedOperationQueue {
 private class MainQueue: AdvancedOperationQueue {
     override init() {
         super.init()
-        underlyingQueue = dispatch_get_main_queue()
+        underlyingQueue = DispatchQueue.main
         maxConcurrentOperationCount = 1
     }
 }
