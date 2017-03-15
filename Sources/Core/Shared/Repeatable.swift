@@ -102,7 +102,7 @@ open class RepeatableOperation<T: AdvancedOperation>: AdvancedOperation, Operati
         super.init()
         name = "Repeatable<\(operation.operationName)>"
         addObserver(DidCancelObserver { [weak operation] _ in
-            (operation as? AdvancedOperation)?.cancel()
+            (operation)?.cancel()
         })
     }
 
