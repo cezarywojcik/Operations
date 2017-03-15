@@ -64,7 +64,7 @@ internal class Protector<T> {
     }
 }
 
-extension Protector where T: _ArrayProtocol {
+extension Protector where T: RangeReplaceableCollection {
 
     func append(_ newElement: T.Iterator.Element) {
         write({ (ward: inout T) in
