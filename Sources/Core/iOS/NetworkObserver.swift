@@ -9,7 +9,7 @@
 import UIKit
 
 protocol NetworkActivityIndicatorInterface {
-    var networkActivityIndicatorVisible: Bool { get set }
+    var isNetworkActivityIndicatorVisible: Bool { get set }
 }
 
 extension UIApplication: NetworkActivityIndicatorInterface { }
@@ -63,7 +63,7 @@ private class NetworkIndicatorController {
     }
 
     fileprivate func updateIndicatorVisibility() {
-        if activityCount > 0 && networkActivityIndicator.networkActivityIndicatorVisible == false {
+        if activityCount > 0 && networkActivityIndicator.isNetworkActivityIndicatorVisible == false {
             networkIndicatorShouldShow(true)
         }
         else if activityCount == 0 {
@@ -76,7 +76,7 @@ private class NetworkIndicatorController {
     fileprivate func networkIndicatorShouldShow(_ shouldShow: Bool) {
         visibilityTimer?.cancel()
         visibilityTimer = .none
-        networkActivityIndicator.networkActivityIndicatorVisible = shouldShow
+        networkActivityIndicator.isNetworkActivityIndicatorVisible = shouldShow
     }
 
     // Public API

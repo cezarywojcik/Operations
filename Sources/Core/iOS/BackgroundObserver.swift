@@ -10,7 +10,7 @@ import UIKit
 
 public protocol BackgroundTaskApplicationInterface {
     var applicationState: UIApplicationState { get }
-    func beginBackgroundTaskWithName(_ taskName: String?, expirationHandler handler: (() -> Void)?) -> UIBackgroundTaskIdentifier
+    func beginBackgroundTask(withName taskName: String?, expirationHandler handler: (() -> Void)?) -> UIBackgroundTaskIdentifier
     func endBackgroundTask(_ identifier: UIBackgroundTaskIdentifier)
 }
 
@@ -71,7 +71,7 @@ open class BackgroundObserver: NSObject {
 
     fileprivate func startBackgroundTask() {
         if identifier == nil {
-            identifier = application.beginBackgroundTaskWithName(type(of: self).backgroundTaskName) {
+            identifier = application.beginBackgroundTask(withName: type(of: self).backgroundTaskName) {
                 self.endBackgroundTask()
             }
         }

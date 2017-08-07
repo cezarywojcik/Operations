@@ -22,7 +22,7 @@ public protocol PresentingViewController: class {
     - parameter animated: a `Bool` flag to indicate whether the presentation should be animated.
     - parameter completion: a completion block which may be nil.
     */
-    func presentViewController(_ viewController: UIViewController, animated: Bool, completion: (() -> Void)?)
+    func present(_ viewController: UIViewController, animated: Bool, completion: (() -> Void)?)
 
 
     @available(iOS 8.0, *)
@@ -32,7 +32,7 @@ public protocol PresentingViewController: class {
     - parameter vc: the `UIViewController` being presented.
     - parameter sender: an optional `AnyObject`, usually this is a `UIControl`.
     */
-    func showViewController(_ viewController: UIViewController, sender: Any?)
+    func show(_ viewController: UIViewController, sender: Any?)
 
     @available(iOS 8.0, *)
     /**
@@ -100,10 +100,10 @@ public enum ViewControllerDisplayStyle<ViewController: PresentingViewController>
             else {
                 presented = UINavigationController(rootViewController: controller)
             }
-            from.presentViewController(presented, animated: true, completion: completion)
+            from.present(presented, animated: true, completion: completion)
 
         case .show(let from):
-            from.showViewController(controller, sender: sender)
+            from.show(controller, sender: sender)
             completion?()
 
         case .showDetail(let from):

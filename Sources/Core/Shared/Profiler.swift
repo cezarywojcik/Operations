@@ -60,7 +60,7 @@ enum PendingValue<T: Equatable>: Equatable {
     }
 }
 
-func == <T: Equatable>(lhs: PendingValue<T>, rhs: PendingValue<T>) -> Bool {
+func == <T>(lhs: PendingValue<T>, rhs: PendingValue<T>) -> Bool {
     switch (lhs, rhs) {
     case (.Pending, .Pending):
         return true
