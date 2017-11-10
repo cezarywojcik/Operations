@@ -110,7 +110,7 @@ open class DelayOperation: AdvancedOperation {
         switch delay.interval {
 
         case (let interval) where interval > 0.0:
-            timer.scheduleOneshot(deadline: DispatchTime.now() + interval, leeway: .nanoseconds(Int(leeway)))
+            timer.schedule(deadline: DispatchTime.now() + interval, leeway: .nanoseconds(Int(leeway)))
             timer.resume()
 
         default:

@@ -125,7 +125,7 @@ public extension LoggerType {
         if LogManager.enabled && enabled && severity >= minimumLogSeverity {
             let _message = messageWithOperationName(message())
             LogManager.queue.async {
-                self.logger(message: _message, severity: severity, file: file, function: function, line: line)
+                self.logger((message: _message, severity: severity, file: file, function: function, line: line))
             }
         }
     }
@@ -344,7 +344,9 @@ open class LogManager: LogManagerType {
     init() {
         _enabled = Protector<Bool>(true)
         _severity = Protector<LogSeverity>(.warning)
-        _logger = { message, severity, file, function, line in
+        _logger = { (arg) in
+            
+            let (message, _, file, function, line) = arg
             print("\(LogManager.metadataForFile(file, function: function, line: line))\(message)")
         }
     }

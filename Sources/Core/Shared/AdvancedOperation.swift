@@ -309,7 +309,7 @@ open class AdvancedOperation: Operation, OperationDebuggable {
 
      - parameter errors: an array of `ErrorType`.
      */
-    open func operationWillFinish(_ errors: [Error]) { /* No op */ }
+    open func operationWillFinish(_ errors: [Error]) { /* No op */ print("This was called") }
 
     /**
      Subclasses may override `operationDidFinish(_:)` if they wish to
@@ -362,7 +362,7 @@ open class AdvancedOperation: Operation, OperationDebuggable {
     open func operationDidCancel() { /* No op */ }
 
     public final override func cancel() {
-        let willCancel = stateLock.withCriticalScope { _ -> Bool in
+        let willCancel = stateLock.withCriticalScope { () -> Bool in
             // Do not cancel if already finished or finishing, or cancelled
             guard state <= .executing && !_cancelled else { return false }
             // Only a single call to cancel should continue
@@ -420,6 +420,12 @@ open class AdvancedOperation: Operation, OperationDebuggable {
             dependencies: dependencies.map { ($0 as? OperationDebuggable)?.debugData() ?? $0.debugDataNSOperation() })
     }
 
+
+    internal func removeDirectDependency(_ directDependency: Operation) {
+        precondition(state <= .executing, "Dependencies cannot be modified after execution has begun, current state: \(state).")
+        directDependencies.remove(directDependency)
+        super.removeDependency(directDependency)
+    }
 }
 
 // swiftlint:enable type_body_length
@@ -510,12 +516,6 @@ public extension AdvancedOperation {
         precondition(state <= .executing, "Dependencies cannot be modified after execution has begun, current state: \(state).")
         directDependencies.insert(directDependency)
         super.addDependency(directDependency)
-    }
-
-    internal func removeDirectDependency(_ directDependency: Operation) {
-        precondition(state <= .executing, "Dependencies cannot be modified after execution has begun, current state: \(state).")
-        directDependencies.remove(directDependency)
-        super.removeDependency(directDependency)
     }
 
     /// Public override to get the dependencies
@@ -707,7 +707,7 @@ public extension AdvancedOperation {
     }
 
     fileprivate final func _finish(_ receivedErrors: [Error], fromCancel: Bool = false) {
-        let willFinish = stateLock.withCriticalScope { _ -> Bool in
+        let willFinish = stateLock.withCriticalScope { () -> Bool in
             // Do not finish if already finished or finishing
             guard state <= .finishing else { return false }
             // Only a single call to _finish should continue
@@ -831,7 +831,7 @@ extension Operation {
 
     - parameter block: a Void -> Void block
     */
-    public func addCompletionBlock(_ block: @escaping (Void) -> Void) {
+    public func addCompletionBlock(_ block: @escaping () -> Void) {
         if let existing = completionBlock {
             completionBlock = {
                 existing()
