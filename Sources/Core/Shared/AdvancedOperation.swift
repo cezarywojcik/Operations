@@ -309,7 +309,7 @@ open class AdvancedOperation: Operation, OperationDebuggable {
 
      - parameter errors: an array of `ErrorType`.
      */
-    open func operationWillFinish(_ errors: [Error]) { /* No op */ print("This was called") }
+    open func operationWillFinish(_ errors: [Error]) { /* No op */ }
 
     /**
      Subclasses may override `operationDidFinish(_:)` if they wish to
