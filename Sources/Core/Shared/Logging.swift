@@ -280,7 +280,7 @@ open class LogManager: LogManagerType {
      # Enabled Operation logging
      Enable or Disable built in logger. Default is enabled.
      */
-    open static var enabled: Bool {
+    public static var enabled: Bool {
         get { return sharedInstance.enabled }
         set { sharedInstance.enabled = newValue }
     }
@@ -289,7 +289,7 @@ open class LogManager: LogManagerType {
      # Global Log Severity
      Adjust the global log level severity.
     */
-    open static var severity: LogSeverity {
+    public static var severity: LogSeverity {
         get { return sharedInstance.severity }
         set { sharedInstance.severity = newValue }
     }
@@ -298,7 +298,7 @@ open class LogManager: LogManagerType {
      # Global logger block
      Set a custom logger block.
     */
-    open static var logger: LoggerBlockType {
+    public static var logger: LoggerBlockType {
         get { return sharedInstance.logger }
         set { sharedInstance.logger = newValue }
     }

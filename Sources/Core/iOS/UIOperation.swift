@@ -128,15 +128,15 @@ This enum lets you define how the view controller should be presented. Either, "
 open class UIOperation<C, From>: AdvancedOperation where C: UIViewController, From: PresentingViewController {
 
     /// The controller which will be presented.
-    open let controller: C
+    public let controller: C
 
     /// The presenting `ViewControllerDisplayStyle`
-    open let from: ViewControllerDisplayStyle<From>
+    public let from: ViewControllerDisplayStyle<From>
 
     /// The `AnyObject` sender.
-    open let sender: AnyObject?
+    public let sender: AnyObject?
 
-    open let wrapInNavigationController: Bool
+    public let wrapInNavigationController: Bool
 
     /**
     Construct a `UIOperation` with the presented view controller, the presenting view controller display

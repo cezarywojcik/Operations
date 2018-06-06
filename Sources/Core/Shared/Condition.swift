@@ -70,7 +70,7 @@ open class Condition: AdvancedOperation, ConditionType, ResultOperationType {
 
     internal weak var operation: AdvancedOperation? = .none
 
-    open var result: ConditionResult! = nil
+    open var result: ConditionResult? = nil
 
     public final override func execute() {
         guard let operation = operation else {
@@ -141,14 +141,14 @@ open class ComposedCondition<C: Condition>: Condition, AutomaticInjectionOperati
 
      - parameter condition: a the composed `Condition`
      */
-    open let condition: C
+    public let condition: C
 
     override var directDependencies: Set<Operation> {
         return super.directDependencies.union(condition.directDependencies)
     }
 
     /// Conformance to `AutomaticInjectionOperationType`
-    open var requirement: ConditionResult! = nil
+    open var requirement: ConditionResult? = nil
 
     override var operation: AdvancedOperation? {
         didSet {
@@ -209,6 +209,6 @@ internal class WrappedOperationCondition: Condition {
 extension Array where Element: Operation {
 
     internal var conditions: [Condition] {
-        return flatMap { $0 as? Condition }
+        return compactMap { $0 as? Condition }
     }
 }

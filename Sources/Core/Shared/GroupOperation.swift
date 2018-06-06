@@ -49,7 +49,7 @@ open class GroupOperation: AdvancedOperation, OperationQueueDelegate {
     fileprivate var isAddingOperationsGroup = DispatchGroup()
 
     /// - returns: the AdvancedOperationQueue the group runs operations on.
-    open let queue = AdvancedOperationQueue()
+    public let queue = AdvancedOperationQueue()
 
     /// - returns: the operations which have been added to the queue
     open fileprivate(set) var operations: [Operation] {
@@ -420,7 +420,7 @@ public protocol GroupOperationWillAddChildObserver: OperationObserverType {
 extension GroupOperation {
 
     internal var willAddChildOperationObservers: [GroupOperationWillAddChildObserver] {
-        return observers.flatMap { $0 as? GroupOperationWillAddChildObserver }
+        return observers.compactMap { $0 as? GroupOperationWillAddChildObserver }
     }
 }
 

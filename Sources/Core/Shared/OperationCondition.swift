@@ -104,7 +104,7 @@ internal func evaluateOperationConditions(_ conditions: [OperationCondition], op
 
     group.notify(queue: Queue.default.queue) {
 
-        var failures: [Error] = results.flatMap { $0?.error }
+        var failures: [Error] = results.compactMap { $0?.error }
 
         if operation.isCancelled {
             failures.append(OperationError.conditionFailed)

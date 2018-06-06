@@ -81,9 +81,9 @@ extension ExclusivityManager {
 
 open class ExclusivityManagerDebug {
 
-    open static func debugData() -> OperationDebugData {
+    public static func debugData() -> OperationDebugData {
         let allCategoriesDebugData: [OperationDebugData] =
-            ExclusivityManager.sharedInstance.operations.flatMap { (category, operationsArray) in
+            ExclusivityManager.sharedInstance.operations.compactMap { (category, operationsArray) in
                 guard !operationsArray.isEmpty else {
                     return nil
                 }

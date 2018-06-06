@@ -22,11 +22,11 @@ open class OperationDebugData {
 
     public typealias Logger = (String) -> Void
 
-    open let description: String
-    open let properties: [String: String]
-    open let conditions: [String]
-    open let dependencies: [OperationDebugData]
-    open let subOperations: [OperationDebugData]
+    public let description: String
+    public let properties: [String: String]
+    public let conditions: [String]
+    public let dependencies: [OperationDebugData]
+    public let subOperations: [OperationDebugData]
 
     public init(
         description: String,

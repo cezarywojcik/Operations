@@ -16,9 +16,9 @@ import Foundation
 open class ResultOperation<Result>: AdvancedOperation, ResultOperationType {
 
     /// - returns: the Result
-    open var result: Result! = nil
+    open var result: Result? = nil
 
-    public init(result: Result! = nil) {
+    public init(result: Result? = nil) {
         self.result = result
         super.init()
         name = "Result"
@@ -45,7 +45,7 @@ open class ResultOperation<Result>: AdvancedOperation, ResultOperationType {
 open class MapOperation<T, U>: ResultOperation<U>, AutomaticInjectionOperationType {
 
     /// - returns: the requirement an optional type T
-    open var requirement: T! = nil
+    open var requirement: T? = nil
 
     let transform: (T) -> U
 

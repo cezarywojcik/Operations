@@ -1,6 +1,6 @@
 {
   "name": "Operations",
-  "version": "4.0.0",
+  "version": "5.0.0",
   "summary": "Powerful NSOperation subclasses in Swift.",
   "description": "A Swift framework inspired by Apple's WWDC 2015\nsession Advanced NSOperations: https://developer.apple.com/videos/wwdc/2015/?id=226",
   "homepage": "https://github.com/cezarywojcik/Operations",
@@ -10,14 +10,14 @@
   },
   "source": {
     "git": "https://github.com/cezarywojcik/Operations.git",
-    "tag": "4.0.0"
+    "tag": "5.0.0"
   },
   "module_name": "Operations",
   "documentation_url": "http://docs.danthorpe.me/operations/2.10.0/index.html",
   "social_media_url": "https://twitter.com/danthorpe",
   "requires_arc": true,
   "platforms": {
-    "ios": "8.0",
+    "ios": "9.0",
     "watchos": "2.0",
     "tvos": "9.0",
     "osx": "10.10"

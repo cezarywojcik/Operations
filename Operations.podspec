@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name              = "Operations"
-  s.version           = "4.0.0"
+  s.version           = "5.0.0"
   s.summary           = "Powerful NSOperation subclasses in Swift."
   s.description       = <<-DESC
   
@@ -16,7 +16,7 @@ session Advanced NSOperations: https://developer.apple.com/videos/wwdc/2015/?id=
   s.documentation_url = 'http://docs.danthorpe.me/operations/2.10.0/index.html'
   s.social_media_url  = 'https://twitter.com/danthorpe'
   s.requires_arc      = true
-  s.ios.deployment_target = '8.0'
+  s.ios.deployment_target = '9.0'
   s.watchos.deployment_target = '2.0'
   s.tvos.deployment_target = '9.0'
   s.osx.deployment_target = '10.10'

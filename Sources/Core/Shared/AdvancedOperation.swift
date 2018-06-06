@@ -80,7 +80,7 @@ open class AdvancedOperation: Operation, OperationDebuggable {
     }
 
     /// - returns: a unique String which can be used to identify the operation instance
-    open let identifier = UUID().uuidString
+    public let identifier = UUID().uuidString
 
     fileprivate let stateLock = NSRecursiveLock()
     fileprivate var _log = Protector<LoggerType>(Logger())
@@ -569,27 +569,27 @@ public extension AdvancedOperation {
     }
 
     internal var willExecuteObservers: [OperationWillExecuteObserver] {
-        return observers.flatMap { $0 as? OperationWillExecuteObserver }
+        return observers.compactMap { $0 as? OperationWillExecuteObserver }
     }
 
     internal var willCancelObservers: [OperationWillCancelObserver] {
-        return observers.flatMap { $0 as? OperationWillCancelObserver }
+        return observers.compactMap { $0 as? OperationWillCancelObserver }
     }
 
     internal var didCancelObservers: [OperationDidCancelObserver] {
-        return observers.flatMap { $0 as? OperationDidCancelObserver }
+        return observers.compactMap { $0 as? OperationDidCancelObserver }
     }
 
     internal var didProduceOperationObservers: [OperationDidProduceOperationObserver] {
-        return observers.flatMap { $0 as? OperationDidProduceOperationObserver }
+        return observers.compactMap { $0 as? OperationDidProduceOperationObserver }
     }
 
     internal var willFinishObservers: [OperationWillFinishObserver] {
-        return observers.flatMap { $0 as? OperationWillFinishObserver }
+        return observers.compactMap { $0 as? OperationWillFinishObserver }
     }
 
     internal var didFinishObservers: [OperationDidFinishObserver] {
-        return observers.flatMap { $0 as? OperationDidFinishObserver }
+        return observers.compactMap { $0 as? OperationDidFinishObserver }
     }
 }
 
