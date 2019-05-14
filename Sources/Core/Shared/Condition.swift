@@ -17,7 +17,7 @@ public protocol ConditionType {
 
 internal extension ConditionType {
 
-    internal var category: String {
+    var category: String {
         return "\(type(of: self))"
     }
 }
