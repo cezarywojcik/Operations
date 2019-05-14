@@ -29,7 +29,7 @@ open class GroupOperation: AdvancedOperation, OperationQueueDelegate {
         var attemptedRecovery: ErrorsByOperation = [:]
 
         var previousAttempts: [Error] {
-            return Array(FlattenCollection(attemptedRecovery.values))
+            return attemptedRecovery.values.flatMap({ $0 })
         }
 
         var all: [Error] {
