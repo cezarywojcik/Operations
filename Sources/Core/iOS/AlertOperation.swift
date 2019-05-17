@@ -46,7 +46,7 @@ open class AlertOperation<From: PresentingViewController>: AdvancedOperation {
     - parameter from: a generic type conforming to `PresentingViewController`,
     such as an `UIViewController`
     */
-    public init(presentAlertFrom from: From, preferredStyle: UIAlertControllerStyle = .alert) {
+    public init(presentAlertFrom from: From, preferredStyle: UIAlertController.Style = .alert) {
         let controller = UIAlertController(title: .none, message: .none, preferredStyle: preferredStyle)
         uiOperation = UIOperation(controller: controller, displayControllerFrom: .present(from))
         super.init()
@@ -66,7 +66,7 @@ open class AlertOperation<From: PresentingViewController>: AdvancedOperation {
      - parameter handler: a block which receives the operation, and returns Void.
      */
     @discardableResult
-    open func addActionWithTitle(_ title: String, style: UIAlertActionStyle = .default, handler: @escaping (AlertOperation) -> Void = { _ in }) -> UIAlertAction {
+    open func addActionWithTitle(_ title: String, style: UIAlertAction.Style = .default, handler: @escaping (AlertOperation) -> Void = { _ in }) -> UIAlertAction {
         let action = UIAlertAction(title: title, style: style) { [weak self] _ in
             if let weakSelf = self {
                 handler(weakSelf)
@@ -166,7 +166,7 @@ open class AlertOperation<From: PresentingViewController>: AdvancedOperation {
 
      The value of this property is set to the value you specified in the [alertControllerWithTitle:message:preferredStyle:](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UIAlertController_class/#//apple_ref/occ/clm/UIAlertController/alertControllerWithTitle:message:preferredStyle:) method. This value determines how the alert is displayed onscreen.
      */
-    open var preferredStyle: UIAlertControllerStyle {
+    open var preferredStyle: UIAlertController.Style {
         get {
             return alert.preferredStyle
         }

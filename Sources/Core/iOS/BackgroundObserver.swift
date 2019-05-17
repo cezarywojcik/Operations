@@ -9,7 +9,7 @@
 import UIKit
 
 public protocol BackgroundTaskApplicationInterface {
-    var applicationState: UIApplicationState { get }
+    var applicationState: UIApplication.State { get }
     func beginBackgroundTask(withName taskName: String?, expirationHandler handler: (() -> Void)?) -> UIBackgroundTaskIdentifier
     func endBackgroundTask(_ identifier: UIBackgroundTaskIdentifier)
 }
@@ -45,8 +45,8 @@ open class BackgroundObserver: NSObject {
         super.init()
 
         let nc = NotificationCenter.default
-        nc.addObserver(self, selector: #selector(BackgroundObserver.didEnterBackground(_:)), name: NSNotification.Name.UIApplicationDidEnterBackground, object: .none)
-        nc.addObserver(self, selector: #selector(BackgroundObserver.didBecomeActive(_:)), name: NSNotification.Name.UIApplicationDidBecomeActive, object: .none)
+        nc.addObserver(self, selector: #selector(BackgroundObserver.didEnterBackground(_:)), name: UIApplication.didEnterBackgroundNotification, object: .none)
+        nc.addObserver(self, selector: #selector(BackgroundObserver.didBecomeActive(_:)), name: UIApplication.didBecomeActiveNotification, object: .none)
 
         if isInBackground {
             startBackgroundTask()
