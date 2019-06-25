@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name              = "Operations"
-  s.version           = "7.0.0"
+  s.version           = "6.0.0"
   s.summary           = "Powerful NSOperation subclasses in Swift."
   s.description       = <<-DESC
   
@@ -20,7 +20,6 @@ session Advanced NSOperations: https://developer.apple.com/videos/wwdc/2015/?id=
   s.watchos.deployment_target = '2.0'
   s.tvos.deployment_target = '9.0'
   s.osx.deployment_target = '10.10'
-  s.swift_version = '5.0'
 
   # Defaul spec is 'Standard'
   s.default_subspec   = 'Standard'
