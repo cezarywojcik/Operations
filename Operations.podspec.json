@@ -1,6 +1,6 @@
 {
   "name": "Operations",
-  "version": "7.0.1",
+  "version": "7.0.2",
   "summary": "Powerful NSOperation subclasses in Swift.",
   "description": "A Swift framework inspired by Apple's WWDC 2015\nsession Advanced NSOperations: https://developer.apple.com/videos/wwdc/2015/?id=226",
   "homepage": "https://github.com/cezarywojcik/Operations",
