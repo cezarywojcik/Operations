@@ -55,7 +55,7 @@ internal class ExclusivityManager {
     fileprivate func _removeOperation(_ operation: AdvancedOperation, category: String) {
         operation.log.verbose("<<< \(category)")
 
-        if let operationsWithThisCategory = operations[category], let index = operationsWithThisCategory.index(of: operation) {
+        if let operationsWithThisCategory = operations[category], let index = operationsWithThisCategory.firstIndex(of: operation) {
             var mutableOperationsWithThisCategory = operationsWithThisCategory
             mutableOperationsWithThisCategory.remove(at: index)
             operations[category] = mutableOperationsWithThisCategory

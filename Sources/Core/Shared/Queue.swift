@@ -143,6 +143,8 @@ public enum Queue {
             self = .interactive
         case .utility:
             self = .utility
+        @unknown default:
+            self = .default
         }
     }
 

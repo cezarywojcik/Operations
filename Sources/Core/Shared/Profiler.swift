@@ -220,7 +220,7 @@ extension OperationProfiler: OperationProfilerReporter {
 
     public func finishedProfilingWithResult(_ result: ProfileResult) {
         dispatch_sync_legacy(queue: queue) { [unowned self] in
-            if let index = self.children.index(of: result.identity) {
+            if let index = self.children.firstIndex(of: result.identity) {
                 self.result = self.result.addChild(result)
                 self.children.remove(at: index)
             }
